@@ -2,8 +2,6 @@
 	StructuredBuffer<float3x4> _Matrices;
 #endif
 
-//float _Step;
-
 void ConfigureProcedural () {
 	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 		float3x4 m = _Matrices[unity_InstanceID];
@@ -14,10 +12,18 @@ void ConfigureProcedural () {
 	#endif
 }
 
-float4 _BaseColor;
+float4 _ColorA, _ColorB;
+float2 _SequenceNumbers;
 
 float4 GetFractalColor () {
-	return _BaseColor;
+	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
+		return lerp(
+			_ColorA, _ColorB,
+			frac(unity_InstanceID * _SequenceNumbers.x + _SequenceNumbers.y)
+		);
+	#else
+		return _ColorA;
+	#endif
 }
 
 void ShaderGraphFunction_float (float3 In, out float3 Out, out float4 FractalColor) {
