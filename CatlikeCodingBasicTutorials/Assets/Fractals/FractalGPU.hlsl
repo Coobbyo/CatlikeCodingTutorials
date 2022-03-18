@@ -2,7 +2,8 @@
 	StructuredBuffer<float3x4> _Matrices;
 #endif
 
-void ConfigureProcedural () {
+void ConfigureProcedural()
+{
 	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 		float3x4 m = _Matrices[unity_InstanceID];
 		unity_ObjectToWorld._m00_m01_m02_m03 = m._m00_m01_m02_m03;
@@ -13,25 +14,34 @@ void ConfigureProcedural () {
 }
 
 float4 _ColorA, _ColorB;
-float2 _SequenceNumbers;
+float4 _SequenceNumbers;
 
-float4 GetFractalColor () {
+float4 GetFractalColor()
+{
 	#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
-		return lerp(
-			_ColorA, _ColorB,
+		float4 color;
+		color.rgb = lerp(
+			_ColorA.rgb, _ColorB.rgb,
 			frac(unity_InstanceID * _SequenceNumbers.x + _SequenceNumbers.y)
 		);
+		color.a = lerp(
+			_ColorA.a, _ColorB.a,
+			frac(unity_InstanceID * _SequenceNumbers.z + _SequenceNumbers.w)
+		);
+		return color;
 	#else
 		return _ColorA;
 	#endif
 }
 
-void ShaderGraphFunction_float (float3 In, out float3 Out, out float4 FractalColor) {
+void ShaderGraphFunction_float (float3 In, out float3 Out, out float4 FractalColor)
+{
 	Out = In;
 	FractalColor = GetFractalColor();
 }
 
-void ShaderGraphFunction_half (half3 In, out half3 Out, out half4 FractalColor) {
+void ShaderGraphFunction_half (half3 In, out half3 Out, out half4 FractalColor)
+{
 	Out = In;
 	FractalColor = GetFractalColor();
 }

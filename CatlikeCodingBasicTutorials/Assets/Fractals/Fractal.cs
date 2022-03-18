@@ -8,15 +8,13 @@ using static Unity.Mathematics.math;
 using quaternion = Unity.Mathematics.quaternion;
 using Random = UnityEngine.Random;
 
-//Pick up at https://catlikecoding.com/unity/tutorials/basics/organic-variety/#3.3
-
 public class Fractal : MonoBehaviour
 {
 	[BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
 	struct UpdateFractalLevelJob : IJobFor
 	{
-		public float spinAngleDelta;
 		public float scale;
+		public float deltaTime;
 
 		[ReadOnly] public NativeArray<FractalPart> parents;
 		public NativeArray<FractalPart> parts;
@@ -26,13 +24,29 @@ public class Fractal : MonoBehaviour
 		{
 			FractalPart parent = parents[i / 5];
 			FractalPart part = parts[i];
-			part.spinAngle += spinAngleDelta;
-			part.worldRotation = mul(parent.worldRotation,
+			part.spinAngle += part.spinVelocity * deltaTime;
+
+			float3 upAxis = mul(mul(parent.worldRotation, part.rotation), up());
+			float3 sagAxis = cross(up(), upAxis);
+
+			float sagMagnitude = length(sagAxis);
+			quaternion baseRotation;
+			if (sagMagnitude > 0f) {
+				sagAxis /= sagMagnitude;
+				quaternion sagRotation =
+					quaternion.AxisAngle(sagAxis, part.maxSagAngle * sagMagnitude);
+				baseRotation = mul(sagRotation, parent.worldRotation);
+			}
+			else {
+				baseRotation = parent.worldRotation;
+			}
+
+			part.worldRotation = mul(baseRotation,
 				mul(part.rotation, quaternion.RotateY(part.spinAngle))
 			);
 			part.worldPosition =
 				parent.worldPosition +
-				mul(parent.worldRotation, 1.5f * scale * part.direction);
+				mul(part.worldRotation, float3(0f, 1.5f * scale, 0f));
 			parts[i] = part;
 
 			float3x3 r = float3x3(part.worldRotation) * scale;
@@ -42,9 +56,9 @@ public class Fractal : MonoBehaviour
 	}
     private struct FractalPart
     {
-		public float3 direction, worldPosition;
+		public float3 worldPosition;
 		public quaternion rotation, worldRotation;
-		public float spinAngle;
+		public float maxSagAngle, spinAngle, spinVelocity;
 	}
     NativeArray<FractalPart>[] parts;
 	NativeArray<float3x4>[] matrices;
@@ -59,11 +73,10 @@ public class Fractal : MonoBehaviour
 	[SerializeField] private Material material;
 	[SerializeField] private Gradient gradientA, gradientB;
 	[SerializeField] private Color leafColorA, leafColorB;
+	[SerializeField, Range(0f, 90f)] private float maxSagAngleA = 15f, maxSagAngleB = 25f;
+	[SerializeField, Range(0f, 90f)] private float spinSpeedA = 20f, spinSpeedB = 25f;
+	[SerializeField, Range(0f, 1f)] private float reverseSpinChance = 0.25f;
 
-    static float3[] directions =
-	{
-		up(), right(), left(), forward(), back()
-	};
 	static quaternion[] rotations =
 	{
 		quaternion.identity,
@@ -88,7 +101,8 @@ public class Fractal : MonoBehaviour
 			parts[i] = new NativeArray<FractalPart>(length, Allocator.Persistent);
 			matrices[i] = new NativeArray<float3x4>(length, Allocator.Persistent);
 			matricesBuffers[i] = new ComputeBuffer(length, stride);
-			sequenceNumbers[i] = new Vector4(Random.value, Random.value);
+			sequenceNumbers[i] =
+				new Vector4(Random.value, Random.value, Random.value, Random.value);
 		}
 
         parts[0][0] = CreatePart(0);
@@ -132,9 +146,9 @@ public class Fractal : MonoBehaviour
 
     void Update()
     {
-		float spinAngleDelta = 0.125f * PI * Time.deltaTime;
+		float deltaTime = Time.deltaTime;
         FractalPart rootPart = parts[0][0];
-		rootPart.spinAngle += spinAngleDelta;
+		rootPart.spinAngle += rootPart.spinVelocity * deltaTime;
         rootPart.worldRotation = mul(transform.rotation,
 			mul(rootPart.rotation, quaternion.RotateY(rootPart.spinAngle))
 		);
@@ -151,7 +165,7 @@ public class Fractal : MonoBehaviour
 			scale *= 0.5f;
 			jobHandle = new UpdateFractalLevelJob
 			{
-				spinAngleDelta = spinAngleDelta,
+				deltaTime = deltaTime,
 				scale = scale,
 				parents = parts[li - 1],
 				parts = parts[li],
@@ -190,7 +204,10 @@ public class Fractal : MonoBehaviour
 
     FractalPart CreatePart (int childIndex) => new FractalPart
 	{
-		direction = directions[childIndex],
-		rotation = rotations[childIndex]
+		maxSagAngle = radians(Random.Range(maxSagAngleA, maxSagAngleB)),
+		rotation = rotations[childIndex],
+		spinVelocity =
+			(Random.value < reverseSpinChance ? -1f : 1f) *
+			radians(Random.Range(spinSpeedA, spinSpeedB))
 	};
 }
