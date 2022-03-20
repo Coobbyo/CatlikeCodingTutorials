@@ -222,7 +222,7 @@ public class CubeSphere : MonoBehaviour
 		cubeUV[i] = new Color32((byte)x, (byte)y, (byte)z, 0);
 	}
 
-	private void OnDrawGizmos()
+	/*private void OnDrawGizmos()
 	{
 		if (vertices == null)
 			return;
@@ -235,5 +235,5 @@ public class CubeSphere : MonoBehaviour
 			Gizmos.color = Color.yellow;
 			Gizmos.DrawRay(vertices[i], normals[i]);
 		}
-	}
+	}*/
 }
