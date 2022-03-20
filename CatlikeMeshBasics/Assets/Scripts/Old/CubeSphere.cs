@@ -5,6 +5,7 @@ using System.Collections;
 public class CubeSphere : MonoBehaviour
 {
 	[SerializeField] private int gridSize;
+	[SerializeField] private float radius = 1f;
 
 	private Mesh mesh;
 	private Vector3[] vertices;
@@ -208,37 +209,16 @@ public class CubeSphere : MonoBehaviour
 
 	private void SetVertex(int i, int x, int y, int z)
 	{
-		Vector3 inner = vertices[i] = new Vector3(x, y, z);
-
-		if(x < roundness)
-		{
-			inner.x = roundness;
-		}
-		else if(x > gridSize - roundness)
-		{
-			inner.x = gridSize - roundness;
-		}
-
-		if(y < roundness)
-		{
-			inner.y = roundness;
-		}
-		else if(y > gridSize - roundness)
-		{
-			inner.y = gridSize - roundness;
-		}
-
-		if(z < roundness)
-		{
-			inner.z = roundness;
-		}
-		else if(z > gridSize - roundness)
-		{
-			inner.z = gridSize - roundness;
-		}
-
-		normals[i] = (vertices[i] - inner).normalized;
-		vertices[i] = inner + normals[i] * roundness;
+		Vector3 v = new Vector3(x, y, z) * 2f / gridSize - Vector3.one;
+		float x2 = v.x * v.x;
+		float y2 = v.y * v.y;
+		float z2 = v.z * v.z;
+		Vector3 s;
+		s.x = v.x * Mathf.Sqrt(1f - y2 / 2f - z2 / 2f + y2 * z2 / 3f);
+		s.y = v.y * Mathf.Sqrt(1f - x2 / 2f - z2 / 2f + x2 * z2 / 3f);
+		s.z = v.z * Mathf.Sqrt(1f - x2 / 2f - y2 / 2f + x2 * y2 / 3f);
+		normals[i] = s;
+		vertices[i] = normals[i] * radius;
 		cubeUV[i] = new Color32((byte)x, (byte)y, (byte)z, 0);
 	}
 
