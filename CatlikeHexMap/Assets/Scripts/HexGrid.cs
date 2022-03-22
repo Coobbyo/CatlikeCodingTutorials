@@ -6,6 +6,7 @@ public class HexGrid : MonoBehaviour
 	[SerializeField] private int height = 6;
 
 	[SerializeField] private HexCell cellPrefab;
+	[SerializeField] private Texture2D noiseSource;
     private HexCell[] cells;
 
     [SerializeField] private TMP_Text cellLabelPrefab;
@@ -18,6 +19,7 @@ public class HexGrid : MonoBehaviour
 
 	private void Awake()
     {
+		HexMetrics.noiseSource = noiseSource;
 		meshCollider = gameObject.AddComponent<MeshCollider>();
         gridCanvas = GetComponentInChildren<Canvas>();
 		hexMesh = GetComponentInChildren<HexMesh>();
@@ -37,6 +39,10 @@ public class HexGrid : MonoBehaviour
 		hexMesh.Triangulate(cells);
 	}
 
+	void OnEnable()
+	{
+		HexMetrics.noiseSource = noiseSource;
+	}
 	private void CreateCell(int x, int z, int i)
     {
 		Vector3 position;

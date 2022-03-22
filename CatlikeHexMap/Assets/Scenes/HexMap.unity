@@ -1039,6 +1039,7 @@ MonoBehaviour:
   width: 6
   height: 6
   cellPrefab: {fileID: 11422220, guid: 94c2312396697489abc866a188f80152, type: 3}
+  noiseSource: {fileID: 2800000, guid: 36bd4fb22d0238b47acd965416178043, type: 3}
   cellLabelPrefab: {fileID: 8076162097892601924, guid: f68794ca03b6f4510b9a5bd6ee9ba2f4, type: 3}
   defaultColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!4 &885257218
