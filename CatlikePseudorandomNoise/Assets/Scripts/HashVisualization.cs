@@ -6,17 +6,8 @@ using UnityEngine;
 
 using static Unity.Mathematics.math;
 
-public class HashVisualization : MonoBehaviour
+public class HashVisualization : Visualization
 {
-	public enum Shape { Plane, Sphere, Torus }
-
-	static Shapes.ScheduleDelegate[] shapeJobs =
-	{
-		Shapes.Job<Shapes.Plane>.ScheduleParallel,
-		Shapes.Job<Shapes.Sphere>.ScheduleParallel,
-		Shapes.Job<Shapes.Torus>.ScheduleParallel
-	};
-
 	[BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
 	private struct HashJob : IJobFor
     {
@@ -45,17 +36,8 @@ public class HashVisualization : MonoBehaviour
 	}
 
     private static int
-		hashesId = Shader.PropertyToID("_Hashes"),
-		positionsId = Shader.PropertyToID("_Positions"),
-		normalsId = Shader.PropertyToID("_Normals"),
-		configId = Shader.PropertyToID("_Config");
-    
-	[SerializeField] private Mesh instanceMesh;
-	[SerializeField] private Material material;
-	[SerializeField] private Shape shape;
-	[SerializeField, Range(0.1f, 10f)] private float instanceScale = 2f;
-	[SerializeField, Range(1, 512)] private int resolution = 16;
-    [SerializeField, Range(-0.5f, 0.5f)] private float displacement = 0.1f;
+		hashesId = Shader.PropertyToID("_Hashes");
+
     [SerializeField] private int seed;
 	[SerializeField] private SpaceTRS domain = new SpaceTRS
 	{
@@ -63,87 +45,33 @@ public class HashVisualization : MonoBehaviour
 	};
 
 	private NativeArray<uint4> hashes;
+	private ComputeBuffer hashesBuffer;
 
-	private NativeArray<float3x4> positions, normals;
-	private ComputeBuffer hashesBuffer, positionsBuffer, normalsBuffer;
-	private MaterialPropertyBlock propertyBlock;
-	private bool isDirty;
-	private Bounds bounds;
-
-    void OnEnable()
+    protected override void EnableVisualization(int dataLength, MaterialPropertyBlock propertyBlock)
     {
-		isDirty = true;
-		int length = resolution * resolution;
-		length = length / 4 + (length & 1);
-		hashes = new NativeArray<uint4>(length, Allocator.Persistent);
-		positions = new NativeArray<float3x4>(length, Allocator.Persistent);
-		normals = new NativeArray<float3x4>(length, Allocator.Persistent);
-		hashesBuffer = new ComputeBuffer(length * 4, 4);
-		positionsBuffer = new ComputeBuffer(length * 4, 3 * 4);
-		normalsBuffer = new ComputeBuffer(length * 4, 3 * 4);
-
-		propertyBlock ??= new MaterialPropertyBlock();
+		hashes = new NativeArray<uint4>(dataLength, Allocator.Persistent);
+		hashesBuffer = new ComputeBuffer(dataLength * 4, 4);
 		propertyBlock.SetBuffer(hashesId, hashesBuffer);
-		propertyBlock.SetBuffer(positionsId, positionsBuffer);
-		propertyBlock.SetBuffer(normalsId, normalsBuffer);
-		propertyBlock.SetVector(configId, new Vector4(
-            resolution, instanceScale / resolution, displacement
-        ));
 	}
 
-    void OnDisable()
-    {
+    protected override void DisableVisualization()
+	{
 		hashes.Dispose();
-		positions.Dispose();
-		normals.Dispose();
 		hashesBuffer.Release();
-		positionsBuffer.Release();
-		normalsBuffer.Release();
 		hashesBuffer = null;
-		positionsBuffer = null;
-		normalsBuffer = null;
 	}
 
-	void OnValidate()
+    protected override void UpdateVisualization(
+		NativeArray<float3x4> positions, int resolution, JobHandle handle)
     {
-		if(hashesBuffer != null && enabled)
-        {
-			OnDisable();
-			OnEnable();
-		}
-	}
-
-    void Update()
-    {
-		if(isDirty || transform.hasChanged)
+		new HashJob
 		{
-			isDirty = false;
-			transform.hasChanged = false;
+			positions = positions,
+			hashes = hashes,
+			hash = SmallXXHash.Seed(seed),
+			domainTRS = domain.Matrix
+		}.ScheduleParallel(hashes.Length, resolution, handle).Complete();
 
-			JobHandle handle = shapeJobs[(int)shape](
-				positions, normals, resolution, transform.localToWorldMatrix, default
-			);
-
-			new HashJob
-			{
-				positions = positions,
-				hashes = hashes,
-				hash = SmallXXHash.Seed(seed),
-				domainTRS = domain.Matrix
-			}.ScheduleParallel(hashes.Length, resolution, handle).Complete();
-
-			hashesBuffer.SetData(hashes.Reinterpret<uint>(4 * 4));
-			positionsBuffer.SetData(positions.Reinterpret<float3>(3 * 4 * 4));
-			normalsBuffer.SetData(normals.Reinterpret<float3>(3 * 4 * 4));
-
-			bounds = new Bounds(
-				transform.position,
-				float3(2f * cmax(abs(transform.lossyScale)) + displacement)
-			);
-		}
-
-		Graphics.DrawMeshInstancedProcedural(
-			instanceMesh, 0, material, bounds, resolution * resolution, propertyBlock
-		);
+		hashesBuffer.SetData(hashes.Reinterpret<uint>(4 * 4));
 	}
 }
