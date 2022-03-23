@@ -2,47 +2,61 @@ using UnityEngine;
 using TMPro;
 public class HexGrid : MonoBehaviour
 {
-	[SerializeField] private int width = 6;
-	[SerializeField] private int height = 6;
-
-	[SerializeField] private HexCell cellPrefab;
-	[SerializeField] private Texture2D noiseSource;
-    private HexCell[] cells;
-
-    [SerializeField] private TMP_Text cellLabelPrefab;
-	private Canvas gridCanvas;
-
-	private HexMesh hexMesh;
-	private MeshCollider meshCollider;
+	[SerializeField] private int chunkCountX = 4, chunkCountZ = 3;
+	private int cellCountX, cellCountZ;
 
 	[SerializeField] private Color defaultColor = Color.white;
+	[SerializeField] private HexCell cellPrefab;
+    [SerializeField] private TMP_Text cellLabelPrefab;
+	[SerializeField] private HexGridChunk chunkPrefab;
+	[SerializeField] private Texture2D noiseSource;
+
+	private HexGridChunk[] chunks;
+	private HexCell[] cells;
 
 	private void Awake()
     {
 		HexMetrics.noiseSource = noiseSource;
-		meshCollider = gameObject.AddComponent<MeshCollider>();
-        gridCanvas = GetComponentInChildren<Canvas>();
-		hexMesh = GetComponentInChildren<HexMesh>();
-		cells = new HexCell[height * width];
 
-		for(int z = 0, i = 0; z < height; z++)
-        {
-			for(int x = 0; x < width; x++)
-            {
-				CreateCell(x, z, i++);
-			}
-		}
-	}
+		cellCountX = chunkCountX * HexMetrics.chunkSizeX;
+		cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
 
-	private void Start()
-	{
-		hexMesh.Triangulate(cells);
+		CreateChunks();
+		CreateCells();
 	}
 
 	void OnEnable()
 	{
 		HexMetrics.noiseSource = noiseSource;
 	}
+	
+	private void CreateChunks()
+	{
+		chunks = new HexGridChunk[chunkCountX * chunkCountZ];
+
+		for(int z = 0, i = 0; z < chunkCountZ; z++)
+		{
+			for(int x = 0; x < chunkCountX; x++)
+			{
+				HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab);
+				chunk.transform.SetParent(transform);
+			}
+		}
+	}
+
+	private void CreateCells()
+	{
+		cells = new HexCell[cellCountZ * cellCountX];
+
+		for(int z = 0, i = 0; z < cellCountZ; z++)
+		{
+			for(int x = 0; x < cellCountX; x++)
+			{
+				CreateCell(x, z, i++);
+			}
+		}
+	}
+
 	private void CreateCell(int x, int z, int i)
     {
 		Vector3 position;
@@ -51,10 +65,9 @@ public class HexGrid : MonoBehaviour
 		position.z = z * (HexMetrics.outerRadius * 1.5f);
 
 		HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab);
-		cell.transform.SetParent(transform, false);
 		cell.transform.localPosition = position;
 		cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);
-		cell.color = defaultColor;
+		cell.Color = defaultColor;
 
 		if(x > 0)
 		{
@@ -64,38 +77,45 @@ public class HexGrid : MonoBehaviour
 		{
 			if((z & 1) == 0)
 			{
-				cell.SetNeighbor(HexDirection.SE, cells[i - width]);
+				cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX]);
 				if(x > 0)
-					cell.SetNeighbor(HexDirection.SW, cells[i - width - 1]);
+					cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX - 1]);
 			}
 			else
 			{
-				cell.SetNeighbor(HexDirection.SW, cells[i - width]);
-				if(x < width - 1)
-					cell.SetNeighbor(HexDirection.SE, cells[i - width + 1]);
+				cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX]);
+				if(x < cellCountX - 1)
+					cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX + 1]);
 			}
 		}
 		
 		TMP_Text label = Instantiate<TMP_Text>(cellLabelPrefab);
-		label.rectTransform.SetParent(gridCanvas.transform, false);
 		label.rectTransform.anchoredPosition =
 			new Vector2(position.x, position.z);
 		label.text = cell.coordinates.ToStringOnSeparateLines();
 		cell.uiRect = label.rectTransform;
 
 		cell.Elevation = 0;
+
+		AddCellToChunk(x, z, cell);
+	}
+
+	private void AddCellToChunk(int x, int z, HexCell cell)
+	{
+		int chunkX = x / HexMetrics.chunkSizeX;
+		int chunkZ = z / HexMetrics.chunkSizeZ;
+		HexGridChunk chunk = chunks[chunkX + chunkZ * chunkCountX];
+
+		int localX = x - chunkX * HexMetrics.chunkSizeX;
+		int localZ = z - chunkZ * HexMetrics.chunkSizeZ;
+		chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
 	}
 
 	public HexCell GetCell (Vector3 position)
 	{
 		position = transform.InverseTransformPoint(position);
 		HexCoordinates coordinates = HexCoordinates.FromPosition(position);
-		int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;
+		int index = coordinates.X + coordinates.Z * cellCountX + coordinates.Z / 2;
 		return cells[index];
-	}
-
-	public void Refresh()
-	{
-		hexMesh.Triangulate(cells);
 	}
 }
