@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 public class HexGrid : MonoBehaviour
 {
-	[SerializeField] private int chunkCountX = 4, chunkCountZ = 3;
+	public int chunkCountX = 4, chunkCountZ = 3;
 	private int cellCountX, cellCountZ;
 
 	[SerializeField] private Color defaultColor = Color.white;
@@ -111,11 +111,35 @@ public class HexGrid : MonoBehaviour
 		chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
 	}
 
-	public HexCell GetCell (Vector3 position)
+	public HexCell GetCell(Vector3 position)
 	{
 		position = transform.InverseTransformPoint(position);
 		HexCoordinates coordinates = HexCoordinates.FromPosition(position);
 		int index = coordinates.X + coordinates.Z * cellCountX + coordinates.Z / 2;
 		return cells[index];
+	}
+
+	public HexCell GetCell(HexCoordinates coordinates)
+	{
+		int z = coordinates.Z;
+		if(z < 0 || z >= cellCountZ)
+		{
+			return null;
+		}
+
+		int x = coordinates.X + z / 2;
+		if(x < 0 || x >= cellCountX)
+		{
+			return null;
+		}
+		return cells[x + z * cellCountX];
+	}
+
+	public void ShowUI(bool visible)
+	{
+		for(int i = 0; i < chunks.Length; i++)
+		{
+			chunks[i].ShowUI(visible);
+		}
 	}
 }
