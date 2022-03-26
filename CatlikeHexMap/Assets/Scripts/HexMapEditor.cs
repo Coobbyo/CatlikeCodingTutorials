@@ -3,6 +3,11 @@ using UnityEngine.EventSystems;
 
 public class HexMapEditor : MonoBehaviour
 {
+	enum OptionalToggle
+	{
+		Ignore, Yes, No
+	}
+
 	public Color[] colors;
 	public HexGrid hexGrid;
 	private Color activeColor;
@@ -10,6 +15,7 @@ public class HexMapEditor : MonoBehaviour
 
 	private bool applyColor;
 	private bool applyElevation = true;
+	private OptionalToggle riverMode;
 
 	private int brushSize;
 
@@ -93,6 +99,11 @@ public class HexMapEditor : MonoBehaviour
 	public void SetBrushSize(float size)
 	{
 		brushSize = (int)size;
+	}
+
+	public void SetRiverMode(int mode)
+	{
+		riverMode = (OptionalToggle)mode;
 	}
 
 	public void ShowUI(bool visible)
