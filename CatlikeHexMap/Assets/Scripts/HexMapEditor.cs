@@ -16,19 +16,29 @@ public class HexMapEditor : MonoBehaviour
 	private bool applyColor;
 	private bool applyElevation = true;
 	private OptionalToggle riverMode;
+	private bool isDrag;
+	private HexDirection dragDirection;
+	private HexCell previousCell;
+	private HexDirection previousDrag;
 
 	private int brushSize;
 
 	private void Awake()
     {
-		SelectColor(0);
+		SelectColor(-1);
 	}
 
 	private void Update()
     {
 		if(Input.GetMouseButton(0) &&
 			!EventSystem.current.IsPointerOverGameObject())
-			HandleInput();
+			{
+				HandleInput();
+			}
+			else
+			{
+				previousCell = null;
+			}
 	}
 
 	private void HandleInput()
@@ -36,7 +46,21 @@ public class HexMapEditor : MonoBehaviour
 		Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 		RaycastHit hit;
 		if(Physics.Raycast(inputRay, out hit))
-			EditCells(hexGrid.GetCell(hit.point));
+		{
+			HexCell currentCell = hexGrid.GetCell(hit.point);
+			if (previousCell && previousCell != currentCell) {
+				ValidateDrag(currentCell);
+			}
+			else {
+				isDrag = false;
+			}
+			EditCells(currentCell);
+			previousCell = currentCell;
+		}
+		else
+		{
+			previousCell = null;
+		}
 	}
 
 	private void EditCells(HexCell center)
@@ -74,7 +98,21 @@ public class HexMapEditor : MonoBehaviour
 			{
 				cell.Elevation = activeElevation;
 			}
+
+			if(riverMode == OptionalToggle.No)
+			{
+				cell.RemoveRiver();
+			}
+			else if(isDrag && riverMode == OptionalToggle.Yes)
+			{
+				HexCell otherCell = cell.GetNeighbor(dragDirection.Opposite());
+				if(otherCell)
+				{
+					otherCell.SetOutgoingRiver(dragDirection);
+				}
+			}
 		}
+		
 	}
 
 	public void SelectColor (int index)
@@ -104,6 +142,22 @@ public class HexMapEditor : MonoBehaviour
 	public void SetRiverMode(int mode)
 	{
 		riverMode = (OptionalToggle)mode;
+	}
+
+	private void ValidateDrag(HexCell currentCell)
+	{
+		for(dragDirection = HexDirection.NE;
+			dragDirection <= HexDirection.NW;
+			dragDirection++)
+		{
+			if(previousCell.GetNeighbor(dragDirection) == currentCell /*&&
+				previousDrag != dragDirection*/)
+			{
+				isDrag = true;
+				return;
+			}
+		}
+		isDrag = false;
 	}
 
 	public void ShowUI(bool visible)

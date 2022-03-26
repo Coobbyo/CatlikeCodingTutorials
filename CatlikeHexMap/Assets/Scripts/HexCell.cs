@@ -104,6 +104,24 @@ public class HexCell : MonoBehaviour
 			return hasIncomingRiver != hasOutgoingRiver;
 		}
 	}
+	public float StreamBedY
+	{
+		get
+		{
+			return
+				(elevation + HexMetrics.streamBedElevationOffset) *
+				HexMetrics.elevationStep;
+		}
+	}
+	public float RiverSurfaceY
+	{
+		get
+		{
+			return
+				(elevation + HexMetrics.riverSurfaceElevationOffset) *
+				HexMetrics.elevationStep;
+		}
+	}
 
 	private Color color;
 	private int elevation = int.MinValue;
