@@ -1,3 +1,4 @@
+using System;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -7,6 +8,12 @@ using static Unity.Mathematics.math;
 
 public static partial class Noise
 {
+	[Serializable] public struct Settings
+	{
+		public int seed;
+		public static Settings Default => new Settings {};
+	}
+
 	public interface INoise
     {
 		float4 GetNoise4 (float4x3 positions, SmallXXHash4 hash);
@@ -19,12 +26,13 @@ public static partial class Noise
 
 		[WriteOnly] public NativeArray<float4> noise;
 
-		public SmallXXHash4 hash;
+		public Settings settings;
 
 		public float3x4 domainTRS;
 
 		public void Execute(int i)
         {
+			var hash = SmallXXHash4.Seed(settings.seed);
 			noise[i] = default(N).GetNoise4(
 				domainTRS.TransformVectors(transpose(positions[i])), hash
 			);
@@ -32,18 +40,18 @@ public static partial class Noise
 
         public static JobHandle ScheduleParallel(
 			NativeArray<float3x4> positions, NativeArray<float4> noise,
-			int seed, SpaceTRS domainTRS, int resolution, JobHandle dependency
+			Settings settings, SpaceTRS domainTRS, int resolution, JobHandle dependency
 		) => new Job<N>
         {
 			positions = positions,
 			noise = noise,
-			hash = SmallXXHash.Seed(seed),
+			settings = settings,
 			domainTRS = domainTRS.Matrix,
 		}.ScheduleParallel(positions.Length, resolution, dependency);
 	}
 
     public delegate JobHandle ScheduleDelegate(
 		NativeArray<float3x4> positions, NativeArray<float4> noise,
-		int seed, SpaceTRS domainTRS, int resolution, JobHandle dependency
+		Settings settings, SpaceTRS trs, int resolution, JobHandle dependency
 	);
 }

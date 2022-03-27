@@ -26,7 +26,7 @@ public class NoiseVisualization : Visualization
 		}
 	};
 
-    [SerializeField] private int seed;
+    [SerializeField] private Settings noiseSettings = Settings.Default;
 	[SerializeField] private NoiseType type;
 	[SerializeField, Range(1, 3)] private int dimensions = 3;
 	[SerializeField] private SpaceTRS domain = new SpaceTRS
@@ -55,7 +55,7 @@ public class NoiseVisualization : Visualization
 		NativeArray<float3x4> positions, int resolution, JobHandle handle)
     {
 		noiseJobs[(int)type, dimensions - 1](
-			positions, noise, seed, domain, resolution, handle
+			positions, noise, noiseSettings, domain, resolution, handle
 		).Complete();
 		noiseBuffer.SetData(noise.Reinterpret<float>(4 * 4));
 	}
