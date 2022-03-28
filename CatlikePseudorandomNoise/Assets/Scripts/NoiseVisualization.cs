@@ -7,7 +7,7 @@ using static Noise;
 
 public class NoiseVisualization : Visualization
 {
-	public enum NoiseType { Perlin, Value }
+	public enum NoiseType { Perlin, PerlinTurbulence, Value, ValueTurbulence }
 	
     private static int
 		noiseId = Shader.PropertyToID("_Noise");
@@ -20,9 +20,19 @@ public class NoiseVisualization : Visualization
 			Job<Lattice3D<Perlin>>.ScheduleParallel
 		},
 		{
+			Job<Lattice1D<Turbulence<Perlin>>>.ScheduleParallel,
+			Job<Lattice2D<Turbulence<Perlin>>>.ScheduleParallel,
+			Job<Lattice3D<Turbulence<Perlin>>>.ScheduleParallel
+		},
+		{
 			Job<Lattice1D<Value>>.ScheduleParallel,
 			Job<Lattice2D<Value>>.ScheduleParallel,
 			Job<Lattice3D<Value>>.ScheduleParallel
+		},
+		{
+			Job<Lattice1D<Turbulence<Value>>>.ScheduleParallel,
+			Job<Lattice2D<Turbulence<Value>>>.ScheduleParallel,
+			Job<Lattice3D<Turbulence<Value>>>.ScheduleParallel
 		}
 	};
 

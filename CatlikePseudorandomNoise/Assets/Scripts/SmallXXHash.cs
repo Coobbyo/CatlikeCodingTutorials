@@ -71,7 +71,8 @@ public readonly struct SmallXXHash4
     public static implicit operator SmallXXHash4 (uint4 accumulator) =>
 		new SmallXXHash4(accumulator);
 
-    public static implicit operator uint4 (SmallXXHash4 hash) {
+    public static implicit operator uint4 (SmallXXHash4 hash)
+	{
 		uint4 avalanche = hash.accumulator;
 		avalanche ^= avalanche >> 15;
 		avalanche *= primeB;
@@ -81,7 +82,10 @@ public readonly struct SmallXXHash4
 		return avalanche;
 	}
 
-    public SmallXXHash4 Eat (int4 data) =>
+	public static SmallXXHash4 operator + (SmallXXHash4 h, int v) =>
+		h.accumulator + (uint)v;
+	
+	public SmallXXHash4 Eat (int4 data) =>
 		RotateLeft(accumulator + (uint4)data * primeC, 17) * primeD;
 
     static uint4 RotateLeft (uint4 data, int steps) =>
