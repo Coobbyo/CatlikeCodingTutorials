@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 public class HexCell : MonoBehaviour
 {
-	public HexGridChunk chunk;
 	public HexCoordinates coordinates;
+	public HexGridChunk chunk;
 	public RectTransform uiRect;
 
 	public Color Color
@@ -122,6 +122,20 @@ public class HexCell : MonoBehaviour
 				HexMetrics.elevationStep;
 		}
 	}
+	public bool HasRoads
+	{
+		get
+		{
+			for(int i = 0; i < roads.Length; i++)
+			{
+				if(roads[i])
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+	}
 
 	private Color color;
 	private int elevation = int.MinValue;
@@ -129,6 +143,7 @@ public class HexCell : MonoBehaviour
 	private HexDirection incomingRiver, outgoingRiver;
 
 	[SerializeField] private HexCell[] neighbors;
+	[SerializeField] private bool[] roads;
 
 	public HexCell GetNeighbor(HexDirection direction)
 	{
@@ -214,6 +229,11 @@ public class HexCell : MonoBehaviour
 		HexCell neighbor = GetNeighbor(incomingRiver);
 		neighbor.hasOutgoingRiver = false;
 		neighbor.RefreshSelfOnly();
+	}
+
+	public bool HasRoadThroughEdge(HexDirection direction)
+	{
+		return roads[(int)direction];
 	}
 
 	private void Refresh()
