@@ -8,9 +8,15 @@ public static partial class Noise
     {
 		public float4 GetNoise4(float4x3 positions, SmallXXHash4 hash, int frequency)
         {
-			LatticeSpan4 x = default(L).GetLatticeSpan4(positions.c0, frequency);
+			var l = default(L);
+			LatticeSpan4 x = l.GetLatticeSpan4(positions.c0, frequency);
 
-			return 0f;
+			float4 minima = 2f;
+			for (int u = -1; u <= 1; u++) {
+				SmallXXHash4 h = hash.Eat(l.ValidateSingleStep(x.p0 + u, frequency));
+				minima = UpdateVoronoiMinima(minima, abs(h.Floats01A + u - x.g0));
+			}
+			return minima;
 		}
 	}
 
@@ -23,7 +29,24 @@ public static partial class Noise
 				x = l.GetLatticeSpan4(positions.c0, frequency),
 				z = l.GetLatticeSpan4(positions.c2, frequency);
 
-			return 0f;
+			float4 minima = 2f;
+			for(int u = -1; u <= 1; u++)
+			{
+				SmallXXHash4 hx = hash.Eat(l.ValidateSingleStep(x.p0 + u, frequency));
+				float4 xOffset = u - x.g0;
+				for(int v = -1; v <= 1; v++)
+				{
+					SmallXXHash4 h = hx.Eat(l.ValidateSingleStep(z.p0 + v, frequency));
+					float4 zOffset = v - z.g0;
+					minima = UpdateVoronoiMinima(minima, GetDistance(
+						h.Floats01A + xOffset, h.Floats01B + zOffset
+					));
+					minima = UpdateVoronoiMinima(minima, GetDistance(
+						h.Floats01C + xOffset, h.Floats01D + zOffset
+					));
+				}
+			}
+			return min(minima, 1f);
 		}
 	}
 
@@ -37,7 +60,43 @@ public static partial class Noise
 				y = l.GetLatticeSpan4(positions.c1, frequency),
 				z = l.GetLatticeSpan4(positions.c2, frequency);
 
-			return 0f;
+			float4 minima = 2f;
+			for(int u = -1; u <= 1; u++)
+			{
+				SmallXXHash4 hx = hash.Eat(l.ValidateSingleStep(x.p0 + u, frequency));
+				float4 xOffset = u - x.g0;
+				for(int v = -1; v <= 1; v++)
+				{
+					SmallXXHash4 hy = hx.Eat(l.ValidateSingleStep(y.p0 + v, frequency));
+					float4 yOffset = v - y.g0;
+					for(int w = -1; w <= 1; w++)
+					{
+						SmallXXHash4 h =
+							hy.Eat(l.ValidateSingleStep(z.p0 + w, frequency));
+						float4 zOffset = w - z.g0;
+						minima = UpdateVoronoiMinima(minima, GetDistance(
+							h.GetBitsAsFloats01(5, 0) + xOffset,
+							h.GetBitsAsFloats01(5, 5) + yOffset,
+							h.GetBitsAsFloats01(5, 10) + zOffset
+						));
+						minima = UpdateVoronoiMinima(minima, GetDistance(
+							h.GetBitsAsFloats01(5, 15) + xOffset,
+							h.GetBitsAsFloats01(5, 20) + yOffset,
+							h.GetBitsAsFloats01(5, 25) + zOffset
+						));
+					}
+				}
+			}
+			return min(minima, 1f);
 		}
 	}
+
+	private static float4 UpdateVoronoiMinima(float4 minima, float4 distances)
+	{
+		return select(minima, distances, distances < minima);
+	}
+
+	static float4 GetDistance(float4 x, float4 y) => sqrt(x * x + y * y);
+	static float4 GetDistance (float4 x, float4 y, float4 z) =>
+		sqrt(x * x + y * y + z * z);
 }
