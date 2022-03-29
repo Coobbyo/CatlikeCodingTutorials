@@ -20,7 +20,7 @@ public static class HexMetrics
 	public const float streamBedElevationOffset = -1.75f;
 	public const float riverSurfaceElevationOffset = -0.5f;
 
-	public const float cellPerturbStrength = 4f; //0f; //For perfect Bestagons
+	public const float cellPerturbStrength = 4f; //0f For perfect Bestagons
 	public const float elevationPerturbStrength = 1.5f;
 	public const float noiseScale = 0.003f;
 
