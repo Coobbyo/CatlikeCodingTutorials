@@ -85,6 +85,9 @@ public readonly struct SmallXXHash4
 	public static SmallXXHash4 operator + (SmallXXHash4 h, int v) =>
 		h.accumulator + (uint)v;
 	
+	public static SmallXXHash4 Select (SmallXXHash4 a, SmallXXHash4 b, bool4 c) =>
+		math.select(a.accumulator, b.accumulator, c);
+
 	public SmallXXHash4 Eat (int4 data) =>
 		RotateLeft(accumulator + (uint4)data * primeC, 17) * primeD;
 
