@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 public class HexGrid : MonoBehaviour
 {
+	public int seed;
 	public int chunkCountX = 4, chunkCountZ = 3;
 	private int cellCountX, cellCountZ;
 
@@ -17,6 +18,7 @@ public class HexGrid : MonoBehaviour
 	private void Awake()
     {
 		HexMetrics.noiseSource = noiseSource;
+		HexMetrics.InitializeHashGrid(seed);
 
 		cellCountX = chunkCountX * HexMetrics.chunkSizeX;
 		cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
@@ -27,7 +29,11 @@ public class HexGrid : MonoBehaviour
 
 	void OnEnable()
 	{
-		HexMetrics.noiseSource = noiseSource;
+		if(!HexMetrics.noiseSource)
+		{
+			HexMetrics.noiseSource = noiseSource;
+			HexMetrics.InitializeHashGrid(seed);
+		}
 	}
 	
 	private void CreateChunks()

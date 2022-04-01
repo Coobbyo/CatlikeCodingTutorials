@@ -10,13 +10,16 @@ public class HexMapEditor : MonoBehaviour
 
 	public Color[] colors;
 	public HexGrid hexGrid;
+
 	private Color activeColor;
 	private int activeElevation;
 	private int activeWaterLevel;
+	private int activeUrbanLevel, activeFarmLevel, activePlantLevel;
 
 	private bool applyColor;
 	private bool applyElevation = true;
 	private bool applyWaterLevel = true;
+	private bool applyUrbanLevel, applyFarmLevel, applyPlantLevel;
 	private OptionalToggle riverMode, roadMode;
 	private bool isDrag;
 	private HexDirection dragDirection;
@@ -106,6 +109,21 @@ public class HexMapEditor : MonoBehaviour
 				cell.WaterLevel = activeWaterLevel;
 			}
 
+			if(applyUrbanLevel)
+			{
+				cell.UrbanLevel = activeUrbanLevel;
+			}
+
+			if(applyFarmLevel)
+			{
+				cell.FarmLevel = activeFarmLevel;
+			}
+			
+			if(applyPlantLevel)
+			{
+				cell.PlantLevel = activePlantLevel;
+			}
+
 			if(riverMode == OptionalToggle.No)
 			{
 				cell.RemoveRiver();
@@ -144,14 +162,19 @@ public class HexMapEditor : MonoBehaviour
 		}
 	}
 
+	public void SetApplyElevation(bool toggle)
+	{
+		applyElevation = toggle;
+	}
+
 	public void SetElevation(float elevation)
 	{
 		activeElevation = (int)elevation;
 	}
 
-	public void SetApplyElevation(bool toggle)
+	public void SetApplyWaterLevel(bool toggle)
 	{
-		applyElevation = toggle;
+		applyWaterLevel = toggle;
 	}
 
 	public void SetWaterLevel(float level)
@@ -159,9 +182,34 @@ public class HexMapEditor : MonoBehaviour
 		activeWaterLevel = (int)level;
 	}
 
-	public void SetApplyWaterLevel(bool toggle)
+	public void SetApplyUrbanLevel(bool toggle)
 	{
-		applyWaterLevel = toggle;
+		applyUrbanLevel = toggle;
+	}
+
+	public void SetUrbanLevel(float level) 
+	{
+		activeUrbanLevel = (int)level;
+	}
+
+	public void SetApplyFarmLevel(bool toggle)
+	{
+		applyFarmLevel = toggle;
+	}
+
+	public void SetFarmLevel(float level)
+	{
+		activeFarmLevel = (int)level;
+	}
+
+	public void SetApplyPlantLevel(bool toggle)
+	{
+		applyPlantLevel = toggle;
+	}
+
+	public void SetPlantLevel(float level)
+	{
+		activePlantLevel = (int)level;
 	}
 
 	public void SetBrushSize(float size)

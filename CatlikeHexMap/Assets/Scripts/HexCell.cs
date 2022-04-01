@@ -177,13 +177,58 @@ public class HexCell : MonoBehaviour
 			return waterLevel > elevation;
 		}
 	}
-
+	public int UrbanLevel
+	{
+		get
+		{
+			return urbanLevel;
+		}
+		set
+		{
+			if(urbanLevel != value)
+			{
+				urbanLevel = value;
+				RefreshSelfOnly();
+			}
+		}
+	}
+	public int FarmLevel
+	{
+		get
+		{
+			return farmLevel;
+		}
+		set
+		{
+			if(farmLevel != value)
+			{
+				farmLevel = value;
+				RefreshSelfOnly();
+			}
+		}
+	}
+	public int PlantLevel
+	{
+		get
+		{
+			return plantLevel;
+		}
+		set
+		{
+			if (plantLevel != value)
+			{
+				plantLevel = value;
+				RefreshSelfOnly();
+			}
+		}
+	}
 
 	private Color color;
 	private int elevation = int.MinValue;
 	private bool hasIncomingRiver, hasOutgoingRiver;
 	private HexDirection incomingRiver, outgoingRiver;
 	private int waterLevel;
+	private int urbanLevel, farmLevel, plantLevel;
 
 	[SerializeField] private HexCell[] neighbors;
 	[SerializeField] private bool[] roads;
