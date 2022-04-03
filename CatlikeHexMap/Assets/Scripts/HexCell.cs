@@ -222,6 +222,21 @@ public class HexCell : MonoBehaviour
 			}
 		}
 	}
+	public bool Walled
+	{
+		get
+		{
+			return walled;
+		}
+		set
+		{
+			if(walled != value)
+			{
+				walled = value;
+				Refresh();
+			}
+		}
+	}
 
 	private Color color;
 	private int elevation = int.MinValue;
@@ -229,6 +244,7 @@ public class HexCell : MonoBehaviour
 	private HexDirection incomingRiver, outgoingRiver;
 	private int waterLevel;
 	private int urbanLevel, farmLevel, plantLevel;
+	private bool walled;
 
 	[SerializeField] private HexCell[] neighbors;
 	[SerializeField] private bool[] roads;
