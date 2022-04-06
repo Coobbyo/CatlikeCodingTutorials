@@ -7,7 +7,19 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class ProceduralMesh : MonoBehaviour
 {
-	[SerializeField, Range(1, 10)] private int resolution = 1;
+	private static MeshJobScheduleDelegate[] jobs = {
+		MeshJob<SquareGrid, SingleStream>.ScheduleParallel,
+		MeshJob<SharedSquareGrid, SingleStream>.ScheduleParallel
+	};
+
+	public enum MeshType
+	{
+		SquareGrid, SharedSquareGrid
+	};
+
+	[SerializeField] private MeshType meshType;
+
+	[SerializeField, Range(1, 50)] private int resolution = 1;
     private Mesh mesh;
 
 	private void Awake()
@@ -32,9 +44,7 @@ public class ProceduralMesh : MonoBehaviour
         Mesh.MeshDataArray meshDataArray = Mesh.AllocateWritableMeshData(1);
 		Mesh.MeshData meshData = meshDataArray[0];
 
-		MeshJob<SquareGrid, MultiStream>.ScheduleParallel(
-			mesh, meshData, resolution, default
-		).Complete();
+		jobs[(int)meshType](mesh, meshData, resolution, default).Complete();
 
 		Mesh.ApplyAndDisposeWritableMeshData(meshDataArray, mesh);
     }
