@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System.IO;
 
 public class HexMapEditor : MonoBehaviour
 {
@@ -8,15 +9,13 @@ public class HexMapEditor : MonoBehaviour
 		Ignore, Yes, No
 	}
 
-	public Color[] colors;
 	public HexGrid hexGrid;
 
-	private Color activeColor;
+	private int activeTerrainTypeIndex;
 	private int activeElevation;
 	private int activeWaterLevel;
 	private int activeUrbanLevel, activeFarmLevel, activePlantLevel, activeSpecialIndex;
 
-	private bool applyColor;
 	private bool applyElevation = true;
 	private bool applyWaterLevel = true;
 	private bool applyUrbanLevel, applyFarmLevel, applyPlantLevel, applySpecialIndex;
@@ -28,10 +27,6 @@ public class HexMapEditor : MonoBehaviour
 
 	private int brushSize;
 
-	private void Awake()
-    {
-		SelectColor(-1);
-	}
 
 	private void Update()
     {
@@ -94,9 +89,9 @@ public class HexMapEditor : MonoBehaviour
 	{
 		if(cell)
 		{
-			if(applyColor)
+			if(activeTerrainTypeIndex >= 0)
 			{
-				cell.Color = activeColor;
+				cell.TerrainTypeIndex = activeTerrainTypeIndex;
 			}
 
 			if(applyElevation)
@@ -163,13 +158,9 @@ public class HexMapEditor : MonoBehaviour
 		
 	}
 
-	public void SelectColor (int index)
-    {
-		applyColor = index >= 0;
-		if(applyColor)
-		{
-			activeColor = colors[index];
-		}
+	public void SetTerrainTypeIndex(int index)
+	{
+		activeTerrainTypeIndex = index;
 	}
 
 	public void SetApplyElevation(bool toggle)
@@ -250,6 +241,27 @@ public class HexMapEditor : MonoBehaviour
 	public void SetWalledMode (int mode)
 	{
 		walledMode = (OptionalToggle)mode;
+	}
+
+	public void Save()
+	{
+		//Debug.Log(Application.persistentDataPath);
+		string path = Path.Combine(Application.persistentDataPath, "test.map");
+		using(BinaryWriter writer =
+			new BinaryWriter(File.Open(path, FileMode.Create)))
+		{
+			writer.Write(123);
+		}
+	}
+
+	public void Load()
+	{
+		string path = Path.Combine(Application.persistentDataPath, "test.map");
+		using(BinaryReader reader =
+			new BinaryReader(File.OpenRead(path)))
+		{
+			Debug.Log(reader.ReadInt32());
+		}
 	}
 
 	private void ValidateDrag(HexCell currentCell)

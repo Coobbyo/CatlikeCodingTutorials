@@ -62,6 +62,7 @@ public static class HexMetrics
 	};
 
 	public static Texture2D noiseSource;
+	public static Color[] colors;
 
 	public static Vector3 GetFirstCorner(HexDirection direction)
 	{

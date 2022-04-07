@@ -9,19 +9,24 @@ public class HexCell : MonoBehaviour
 	{
 		get
 		{
-			return color;
+			return HexMetrics.colors[terrainTypeIndex];
+		}
+	}	
+	public int TerrainTypeIndex
+	{
+		get
+		{
+			return terrainTypeIndex;
 		}
 		set
 		{
-			if(color == value)
+			if(terrainTypeIndex != value)
 			{
-				return;
+				terrainTypeIndex = value;
+				Refresh();
 			}
-
-			color = value;
-			Refresh();
 		}
-	}	
+	}
 	public int Elevation
 	{
 		get
@@ -261,7 +266,7 @@ public class HexCell : MonoBehaviour
 		}
 	}
 
-	private Color color;
+	private int terrainTypeIndex;
 	private int elevation = int.MinValue;
 	private bool hasIncomingRiver, hasOutgoingRiver;
 	private HexDirection incomingRiver, outgoingRiver;
