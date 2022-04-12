@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mesh Material
+  m_Name: LatLon
   m_Shader: {fileID: -6465566751694194690, guid: d4ab3fbd9dae4c545a8b0c25f827ecce, type: 3}
   m_ShaderKeywords: _NORMALMAP
   m_LightmapFlags: 4
