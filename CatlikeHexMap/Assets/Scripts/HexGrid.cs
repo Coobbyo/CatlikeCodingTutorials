@@ -12,7 +12,6 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private TMP_Text cellLabelPrefab;
 	[SerializeField] private HexGridChunk chunkPrefab;
 	[SerializeField] private Texture2D noiseSource;
-	public Color[] colors;
 
 	private HexGridChunk[] chunks;
 	private HexCell[] cells;
@@ -21,7 +20,6 @@ public class HexGrid : MonoBehaviour
     {
 		HexMetrics.noiseSource = noiseSource;
 		HexMetrics.InitializeHashGrid(seed);
-		HexMetrics.colors = colors;
 		CreateMap(cellCountX, cellCountZ);
 	}
 
@@ -31,7 +29,6 @@ public class HexGrid : MonoBehaviour
 		{
 			HexMetrics.noiseSource = noiseSource;
 			HexMetrics.InitializeHashGrid(seed);
-			HexMetrics.colors = colors;
 		}
 	}
 	

@@ -6,14 +6,7 @@ public class HexCell : MonoBehaviour
 	public HexCoordinates coordinates;
 	public HexGridChunk chunk;
 	public RectTransform uiRect;
-
-	public Color Color
-	{
-		get
-		{
-			return HexMetrics.colors[terrainTypeIndex];
-		}
-	}	
+	
 	public int TerrainTypeIndex
 	{
 		get

@@ -98,6 +98,7 @@ MonoBehaviour:
   useColors: 0
   useUVCoordinates: 1
   useUV2Coordinates: 0
+  useTerrainTypes: 0
 --- !u!1 &3311419926962337924
 GameObject:
   m_ObjectHideFlags: 0
@@ -196,6 +197,7 @@ MonoBehaviour:
   useColors: 0
   useUVCoordinates: 0
   useUV2Coordinates: 0
+  useTerrainTypes: 0
 --- !u!1 &3894318249860320604
 GameObject:
   m_ObjectHideFlags: 0
@@ -353,6 +355,7 @@ MonoBehaviour:
   useColors: 0
   useUVCoordinates: 0
   useUV2Coordinates: 0
+  useTerrainTypes: 0
 --- !u!1 &4820767841356120496
 GameObject:
   m_ObjectHideFlags: 0
@@ -451,6 +454,7 @@ MonoBehaviour:
   useColors: 0
   useUVCoordinates: 1
   useUV2Coordinates: 0
+  useTerrainTypes: 0
 --- !u!1 &5312886271446873996
 GameObject:
   m_ObjectHideFlags: 0
@@ -549,6 +553,7 @@ MonoBehaviour:
   useColors: 0
   useUVCoordinates: 1
   useUV2Coordinates: 1
+  useTerrainTypes: 0
 --- !u!1 &7854011119968965667
 GameObject:
   m_ObjectHideFlags: 0
@@ -728,6 +733,7 @@ MonoBehaviour:
   useColors: 0
   useUVCoordinates: 1
   useUV2Coordinates: 0
+  useTerrainTypes: 0
 --- !u!1 &9084106431283038105
 GameObject:
   m_ObjectHideFlags: 0
@@ -906,3 +912,4 @@ MonoBehaviour:
   useColors: 1
   useUVCoordinates: 0
   useUV2Coordinates: 0
+  useTerrainTypes: 1
