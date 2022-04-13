@@ -42,8 +42,7 @@ public class SaveLoadMenu : MonoBehaviour
 			Debug.LogError("File does not exist " + path);
 			return;
 		}
-		using(BinaryReader reader =
-			new BinaryReader(File.OpenRead(path)))
+		using(BinaryReader reader = new BinaryReader(File.OpenRead(path)))
 		{
 			int header = reader.ReadInt32();
 			if(header <= 1)
@@ -125,13 +124,17 @@ public class SaveLoadMenu : MonoBehaviour
 
     public void Delete()
     {
+		Debug.Log("Try to Delete");
 		string path = GetSelectedPath();
 		if (path == null)
 			return;
 
+		Debug.Log("Path isn't Null");
 		if (File.Exists(path))
 			File.Delete(path);
         
+		Debug.Log("Should be Deleted?");
+
         nameInput.text = "";
 		FillList();
 	}
