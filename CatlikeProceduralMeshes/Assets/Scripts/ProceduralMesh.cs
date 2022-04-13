@@ -23,7 +23,7 @@ public class ProceduralMesh : MonoBehaviour
 		FlatHexagonGrid, PointyHexagonGrid, UVSphere
 	};
 	[System.Flags] public enum GizmoMode { Nothing = 0, Vertices = 1, Normals = 0b10, Tangents = 0b100 }
-	public enum MaterialMode { Flat, Ripple, LatLonMap }
+	public enum MaterialMode { Flat, Ripple, LatLonMap, CubeMap }
 
 	[SerializeField] private MeshType meshType;
 	[SerializeField, Range(1, 50)] private int resolution = 1;

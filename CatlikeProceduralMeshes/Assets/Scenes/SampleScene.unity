@@ -357,12 +357,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   meshType: 5
   resolution: 8
-  gizmos: -1
-  material: 2
+  gizmos: 0
+  material: 3
   materials:
   - {fileID: 2100000, guid: 90293e1727da73f43b95d812f1f04839, type: 2}
   - {fileID: 2100000, guid: 2aa53be434edc2b4994c65ad707acab9, type: 2}
   - {fileID: 2100000, guid: 90293e1727da73f43b95d812f1f04839, type: 2}
+  - {fileID: 2100000, guid: f5a40e8fa47cdad4ba8dcb34fe0e51e8, type: 2}
 --- !u!23 &939356371
 MeshRenderer:
   m_ObjectHideFlags: 0
