@@ -12,15 +12,16 @@ public class ProceduralMesh : MonoBehaviour
 		MeshJob<SquareGrid, SingleStream>.ScheduleParallel,
 		MeshJob<SharedSquareGrid, SingleStream>.ScheduleParallel,
 		MeshJob<SharedTriangleGrid, SingleStream>.ScheduleParallel,
-		MeshJob<PointyHexagonGrid, SingleStream>.ScheduleParallel,
 		MeshJob<FlatHexagonGrid, SingleStream>.ScheduleParallel,
+		MeshJob<PointyHexagonGrid, SingleStream>.ScheduleParallel,
+		MeshJob<CubeSphere, SingleStream>.ScheduleParallel,
 		MeshJob<UVSphere, SingleStream>.ScheduleParallel
 	};
 
 	public enum MeshType
 	{
 		SquareGrid, SharedSquareGrid, SharedTriangleGrid,
-		FlatHexagonGrid, PointyHexagonGrid, UVSphere
+		FlatHexagonGrid, PointyHexagonGrid, CubeSphere, UVSphere
 	};
 	[System.Flags] public enum GizmoMode { Nothing = 0, Vertices = 1, Normals = 0b10, Tangents = 0b100 }
 	public enum MaterialMode { Flat, Ripple, LatLonMap, CubeMap }
