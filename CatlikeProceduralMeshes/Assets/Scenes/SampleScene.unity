@@ -356,8 +356,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meshType: 5
-  resolution: 8
-  gizmos: 0
+  resolution: 4
+  gizmos: -1
   material: 0
   materials:
   - {fileID: 2100000, guid: 2b2770923603a1649893df877bec14e6, type: 2}
