@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.IO;
+using TMPro;
 
 public class HexCell : MonoBehaviour
 {
@@ -250,6 +251,18 @@ public class HexCell : MonoBehaviour
 			return specialIndex > 0;
 		}
 	}
+	public int Distance
+	{
+		get
+		{
+			return distance;
+		}
+		set
+		{
+			distance = value;
+			UpdateDistanceLabel();
+		}
+	}
 
 	private int terrainTypeIndex;
 	private int elevation = int.MinValue;
@@ -259,9 +272,16 @@ public class HexCell : MonoBehaviour
 	private int urbanLevel, farmLevel, plantLevel;
 	private bool walled;
 	private int specialIndex;
+	private int distance;
 
 	[SerializeField] private HexCell[] neighbors;
 	[SerializeField] private bool[] roads;
+
+	private void UpdateDistanceLabel()
+	{
+		TMP_Text label = uiRect.GetComponent<TMP_Text>(); //TODO: I should eventually save the Text as a reference if I want to keep it around
+		label.text = distance == int.MaxValue ? "" : distance.ToString();
+	}
 
 	public HexCell GetNeighbor(HexDirection direction)
 	{

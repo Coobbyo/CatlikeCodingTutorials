@@ -10,6 +10,7 @@ public class HexMapEditor : MonoBehaviour
 	}
 
 	public HexGrid hexGrid;
+	public Material terrainMaterial;
 
 	private int activeTerrainTypeIndex;
 	private int activeElevation;
@@ -24,7 +25,13 @@ public class HexMapEditor : MonoBehaviour
 	private HexCell previousCell;
 	private HexDirection previousDrag;
 	private int brushSize;
+	private bool editMode;
 
+
+	void Awake()
+	{
+		terrainMaterial.DisableKeyword("GRID_ON");
+	}
 
 	private void Update()
     {
@@ -52,7 +59,14 @@ public class HexMapEditor : MonoBehaviour
 			else {
 				isDrag = false;
 			}
-			EditCells(currentCell);
+			if(editMode)
+			{
+				EditCells(currentCell);
+			}
+			else
+			{
+				hexGrid.FindDistancesTo(currentCell);
+			}
 			previousCell = currentCell;
 		}
 		else
@@ -257,8 +271,28 @@ public class HexMapEditor : MonoBehaviour
 		isDrag = false;
 	}
 
+	public void ShowGrid(bool visible)
+	{
+		if(visible)
+		{
+			terrainMaterial.EnableKeyword("GRID_ON");
+		}
+		else
+		{
+			terrainMaterial.DisableKeyword("GRID_ON");
+		}
+	}
+
 	public void ShowUI(bool visible)
 	{
-		hexGrid.ShowUI(visible);
+		//Eventually I want to add back in the ability to turn on coords
+		//This was removed in the Distances Tutorial
+		//hexGrid.ShowUI(visible);
+	}
+
+	public void SetEditMode(bool toggle)
+	{
+		editMode = toggle;
+		hexGrid.ShowUI(!toggle);
 	}
 }
