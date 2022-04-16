@@ -5,9 +5,9 @@ using static Unity.Mathematics.math;
 
 namespace ProceduralMeshes.Generators
 {
-	public struct CubeSphere : IMeshGenerator
+	public struct SharedCubeSphere : IMeshGenerator
     {
-        public int VertexCount => 6 * 4 * Resolution * Resolution ;
+        public int VertexCount => 6 * Resolution * Resolution + 2;
 		public int IndexCount => 6 * 6 * Resolution * Resolution;
 		public int JobLength => 6 * Resolution;
 		public Bounds Bounds => new Bounds(Vector3.zero, new Vector3(2f, 2f, 2f));
@@ -23,49 +23,37 @@ namespace ProceduralMeshes.Generators
 		{
 			int u = i / 6;
 			Side side = GetSide(i - 6 * u);
-
-			int vi = 4 * Resolution * (Resolution * side.id + u);
+			int vi = Resolution * (Resolution * side.id + u) + 2;
 			int ti = 2 * Resolution * (Resolution * side.id + u);
 
-			float3 uA = side.uvOrigin + side.uVector * u / Resolution;
-			float3 uB = side.uvOrigin + side.uVector * (u + 1) / Resolution;
-			float3 pA = CubeToSphere(uA), pB = CubeToSphere(uB);
+			u += 1;
+
+			float3 pStart = side.uvOrigin + side.uVector * u / Resolution;
 
 			var vertex = new Vertex();
-			vertex.tangent = float4(normalize(pB - pA), -1f);
-
-			for(int v = 1; v <= Resolution; v++, vi += 4, ti += 2)
+			if(i == 0)
 			{
-				float3 pC = CubeToSphere(uA + side.vVector * v / Resolution);
-				float3 pD = CubeToSphere(uB + side.vVector * v / Resolution);
+				vertex.position = -sqrt(1f / 3f);
+				streams.SetVertex(0, vertex);
+				vertex.position = sqrt(1f / 3f);
+				streams.SetVertex(1, vertex);
+			}
 
-				vertex.position = pA;
-				vertex.normal = normalize(cross(pC - pA, vertex.tangent.xyz));
-				vertex.texCoord0 = 0f;
-				streams.SetVertex(vi + 0, vertex);
+			vertex.position = CubeToSphere(pStart);
+			streams.SetVertex(vi, vertex);
 
-				vertex.position = pB;
-				vertex.normal = normalize(cross(pD - pB, vertex.tangent.xyz));
-				vertex.texCoord0 = float2(1f, 0f);
-				streams.SetVertex(vi + 1, vertex);
+			streams.SetTriangle(ti + 0, 0);
+			streams.SetTriangle(ti + 1, 0);
+			vi += 1;
+			ti += 2;
 
-				vertex.position = pC;
-				vertex.tangent.xyz = normalize(pD - pC);
-				vertex.normal = normalize(cross(pC - pA, vertex.tangent.xyz));
-				vertex.texCoord0 = float2(0f, 1f);
-				streams.SetVertex(vi + 2, vertex);
+			for(int v = 1; v < Resolution; v++, vi++, ti += 2)
+			{
+				vertex.position = CubeToSphere(pStart + side.vVector * v / Resolution);
+				streams.SetVertex(vi, vertex);
 
-				vertex.position = pD;
-				vertex.normal = pD;
-				vertex.normal = normalize(cross(pD - pB, vertex.tangent.xyz));
-				vertex.texCoord0 = 1f;
-				streams.SetVertex(vi + 3, vertex);
-
-				streams.SetTriangle(ti + 0, vi + int3(0, 2, 1));
-				streams.SetTriangle(ti + 1, vi + int3(1, 2, 3));
-
-				pA = pC;
-				pB = pD;
+				streams.SetTriangle(ti + 0, 0);
+				streams.SetTriangle(ti + 1, 0);
 			}
 		}
 

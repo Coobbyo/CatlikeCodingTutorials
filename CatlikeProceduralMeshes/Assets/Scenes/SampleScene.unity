@@ -355,10 +355,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e477fc518842ee04f90e941a53dfece1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meshType: 5
-  resolution: 4
+  meshType: 6
+  resolution: 7
   gizmos: -1
-  material: 0
+  material: 3
   materials:
   - {fileID: 2100000, guid: 2b2770923603a1649893df877bec14e6, type: 2}
   - {fileID: 2100000, guid: 2aa53be434edc2b4994c65ad707acab9, type: 2}

@@ -15,13 +15,14 @@ public class ProceduralMesh : MonoBehaviour
 		MeshJob<FlatHexagonGrid, SingleStream>.ScheduleParallel,
 		MeshJob<PointyHexagonGrid, SingleStream>.ScheduleParallel,
 		MeshJob<CubeSphere, SingleStream>.ScheduleParallel,
+		MeshJob<SharedCubeSphere, PositionStream>.ScheduleParallel,
 		MeshJob<UVSphere, SingleStream>.ScheduleParallel
 	};
 
 	public enum MeshType
 	{
 		SquareGrid, SharedSquareGrid, SharedTriangleGrid,
-		FlatHexagonGrid, PointyHexagonGrid, CubeSphere, UVSphere
+		FlatHexagonGrid, PointyHexagonGrid, CubeSphere, SharedCubeSphere, UVSphere
 	};
 	[System.Flags] public enum GizmoMode { Nothing = 0, Vertices = 1, Normals = 0b10, Tangents = 0b100 }
 	public enum MaterialMode { Flat, Ripple, LatLonMap, CubeMap }
@@ -33,8 +34,8 @@ public class ProceduralMesh : MonoBehaviour
 	[SerializeField] private Material[] materials;
 
     private Mesh mesh;
-	private Vector3[] vertices, normals;
-	private Vector4[] tangents;
+	[System.NonSerialized] private Vector3[] vertices, normals;
+	[System.NonSerialized] private Vector4[] tangents;
 
 	private void Awake()
     {
@@ -84,11 +85,19 @@ public class ProceduralMesh : MonoBehaviour
 		}
 		if(drawNormals && normals == null)
 		{
-			normals = mesh.normals;
+			drawNormals = mesh.HasVertexAttribute(VertexAttribute.Normal);
+			if(drawNormals)
+			{
+				normals = mesh.normals;
+			}
 		}
 		if(drawTangents && tangents == null)
 		{
-			tangents = mesh.tangents;
+			drawTangents = mesh.HasVertexAttribute(VertexAttribute.Tangent);
+			if(drawTangents)
+			{
+				tangents = mesh.tangents;
+			}
 		}
 
 		Transform t = transform;
