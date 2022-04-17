@@ -17,6 +17,9 @@ namespace ProceduralMeshes.Generators
 		{
 			public int id;
 			public float3 uvOrigin, uVector, vVector;
+			public int seamStep;
+
+			public bool TouchesMinimumPole => (id & 1) == 0;
 		}
 
 		public void Execute<S> (int i, S streams) where S : struct, IMeshStreams
@@ -25,7 +28,7 @@ namespace ProceduralMeshes.Generators
 			Side side = GetSide(i - 6 * u);
 			int vi = Resolution * (Resolution * side.id + u) + 2;
 			int ti = 2 * Resolution * (Resolution * side.id + u);
-
+			bool firstColumn = u == 0;
 			u += 1;
 
 			float3 pStart = side.uvOrigin + side.uVector * u / Resolution;
@@ -42,19 +45,48 @@ namespace ProceduralMeshes.Generators
 			vertex.position = CubeToSphere(pStart);
 			streams.SetVertex(vi, vertex);
 
-			streams.SetTriangle(ti + 0, 0);
-			streams.SetTriangle(ti + 1, 0);
+			var triangle = int3(
+				vi,
+				firstColumn && side.TouchesMinimumPole ? 0 : vi - Resolution,
+				vi + (firstColumn ?
+					side.TouchesMinimumPole ?
+						side.seamStep * Resolution * Resolution :
+						Resolution == 1 ? side.seamStep : -Resolution + 1 :
+					-Resolution + 1
+				)
+			);
+
+			streams.SetTriangle(ti, triangle);
 			vi += 1;
-			ti += 2;
+			ti += 1;
+
+			int zAdd = firstColumn && side.TouchesMinimumPole ? Resolution : 1;
+			int zAddLast = firstColumn && side.TouchesMinimumPole ?
+				Resolution :
+				!firstColumn && !side.TouchesMinimumPole ?
+					Resolution * ((side.seamStep + 1) * Resolution - u) + u :
+					(side.seamStep + 1) * Resolution * Resolution - Resolution + 1;
 
 			for(int v = 1; v < Resolution; v++, vi++, ti += 2)
 			{
 				vertex.position = CubeToSphere(pStart + side.vVector * v / Resolution);
 				streams.SetVertex(vi, vertex);
 
-				streams.SetTriangle(ti + 0, 0);
-				streams.SetTriangle(ti + 1, 0);
+				triangle.x += 1;
+				triangle.y = triangle.z;
+				triangle.z += v == Resolution - 1 ? zAddLast : zAdd;
+
+				streams.SetTriangle(ti + 0, int3(triangle.x - 1, triangle.y, triangle.x));
+				streams.SetTriangle(ti + 1, triangle);
 			}
+
+			streams.SetTriangle(ti, int3(
+				triangle.x,
+				triangle.z,
+				side.TouchesMinimumPole ?
+					triangle.z + Resolution :
+					u == Resolution ? 1 : triangle.z + 1
+			));
 		}
 
 		private static Side GetSide(int id) => id switch
@@ -64,40 +96,46 @@ namespace ProceduralMeshes.Generators
 				id = id,
 				uvOrigin = -1f,
 				uVector = 2f * right(),
-				vVector = 2f * up()
+				vVector = 2f * up(),
+				seamStep = 4
 			},
 			1 => new Side
 			{
 				id = id,
 				uvOrigin = float3(1f, -1f, -1f),
 				uVector = 2f * forward(),
-				vVector = 2f * up()
+				vVector = 2f * up(),
+				seamStep = 4
 			},
 			2 => new Side
 			{
 				id = id,
 				uvOrigin = -1f,
 				uVector = 2f * forward(),
-				vVector = 2f * right()
+				vVector = 2f * right(),
+				seamStep = -2
 			},
 			3 => new Side
 			{
 				id = id,
 				uvOrigin = float3(-1f, -1f, 1f),
 				uVector = 2f * up(),
-				vVector = 2f * right()
+				vVector = 2f * right(),
+				seamStep = -2
 			},
 			4 => new Side {
 				id = id,
 				uvOrigin = -1f,
 				uVector = 2f * up(),
-				vVector = 2f * forward()
+				vVector = 2f * forward(),
+				seamStep = -2
 			},
 			_ => new Side {
 				id = id,
 				uvOrigin = float3(-1f, 1f, -1f),
 				uVector = 2f * right(),
-				vVector = 2f * forward()
+				vVector = 2f * forward(),
+				seamStep = -2
 			}
 		};
 

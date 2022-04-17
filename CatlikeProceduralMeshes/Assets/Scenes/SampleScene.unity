@@ -356,6 +356,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meshType: 6
+  meshOptimization: -1
   resolution: 7
   gizmos: -1
   material: 3
@@ -383,7 +384,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2aa53be434edc2b4994c65ad707acab9, type: 2}
+  - {fileID: 2100000, guid: 2b2770923603a1649893df877bec14e6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
