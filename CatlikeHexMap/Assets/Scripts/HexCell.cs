@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.IO;
 using TMPro;
 
@@ -8,6 +9,16 @@ public class HexCell : MonoBehaviour
 	public HexGridChunk chunk;
 	public RectTransform uiRect;
 	
+	public HexCell PathFrom { get; set; }
+	public int SearchHeuristic { get; set; }
+	public HexCell NextWithSamePriority { get; set; }
+	public int SearchPriority
+	{
+		get
+		{
+			return distance + SearchHeuristic;
+		}
+	}
 	public int TerrainTypeIndex
 	{
 		get
@@ -431,6 +442,19 @@ public class HexCell : MonoBehaviour
 		{
 			RemoveIncomingRiver();
 		}
+	}
+
+	public void DisableHighlight()
+	{
+		Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+		highlight.enabled = false;
+	}
+	
+	public void EnableHighlight(Color color)
+	{
+		Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+		highlight.color = color;
+		highlight.enabled = true;
 	}
 
 	private void Refresh()

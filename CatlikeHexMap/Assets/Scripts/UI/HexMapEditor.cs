@@ -22,7 +22,7 @@ public class HexMapEditor : MonoBehaviour
 	private OptionalToggle riverMode, roadMode, walledMode;
 	private bool isDrag;
 	private HexDirection dragDirection;
-	private HexCell previousCell;
+	private HexCell previousCell, searchFromCell, searchToCell;
 	private HexDirection previousDrag;
 	private int brushSize;
 	private bool editMode;
@@ -53,19 +53,36 @@ public class HexMapEditor : MonoBehaviour
 		if(Physics.Raycast(inputRay, out hit))
 		{
 			HexCell currentCell = hexGrid.GetCell(hit.point);
-			if (previousCell && previousCell != currentCell) {
+			if(previousCell && previousCell != currentCell)
+			{
 				ValidateDrag(currentCell);
 			}
-			else {
+			else
+			{
 				isDrag = false;
 			}
+
 			if(editMode)
 			{
 				EditCells(currentCell);
 			}
-			else
+			else if(Input.GetKey(KeyCode.LeftShift) && searchToCell != currentCell)
 			{
-				hexGrid.FindDistancesTo(currentCell);
+				if(searchFromCell)
+				{
+					searchFromCell.DisableHighlight();
+				}
+				searchFromCell = currentCell;
+				searchFromCell.EnableHighlight(Color.blue);
+				if(searchToCell)
+				{
+					hexGrid.FindPath(searchFromCell, searchToCell);
+				}
+			}
+			else if(searchFromCell && searchFromCell != currentCell)
+			{
+				searchToCell = currentCell;
+				hexGrid.FindPath(searchFromCell, searchToCell);
 			}
 			previousCell = currentCell;
 		}
