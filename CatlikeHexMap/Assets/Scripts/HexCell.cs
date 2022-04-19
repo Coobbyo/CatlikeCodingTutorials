@@ -12,6 +12,7 @@ public class HexCell : MonoBehaviour
 	public HexCell PathFrom { get; set; }
 	public int SearchHeuristic { get; set; }
 	public HexCell NextWithSamePriority { get; set; }
+	public int SearchPhase { get; set; }
 	public int SearchPriority
 	{
 		get
@@ -271,7 +272,7 @@ public class HexCell : MonoBehaviour
 		set
 		{
 			distance = value;
-			UpdateDistanceLabel();
+			//UpdateDistanceLabel();
 		}
 	}
 
@@ -288,10 +289,16 @@ public class HexCell : MonoBehaviour
 	[SerializeField] private HexCell[] neighbors;
 	[SerializeField] private bool[] roads;
 
-	private void UpdateDistanceLabel()
+	/*private void UpdateDistanceLabel()
 	{
 		TMP_Text label = uiRect.GetComponent<TMP_Text>(); //TODO: I should eventually save the Text as a reference if I want to keep it around
 		label.text = distance == int.MaxValue ? "" : distance.ToString();
+	}*/
+
+	public void SetLabel(string text)
+	{
+		TMP_Text label = uiRect.GetComponent<TMP_Text>();
+		label.text = text;
 	}
 
 	public HexCell GetNeighbor(HexDirection direction)
