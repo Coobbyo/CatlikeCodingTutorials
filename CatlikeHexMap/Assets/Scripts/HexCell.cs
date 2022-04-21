@@ -13,6 +13,7 @@ public class HexCell : MonoBehaviour
 	public int SearchHeuristic { get; set; }
 	public HexCell NextWithSamePriority { get; set; }
 	public int SearchPhase { get; set; }
+	public HexUnit Unit { get; set; }
 	public int SearchPriority
 	{
 		get
@@ -477,12 +478,21 @@ public class HexCell : MonoBehaviour
 					neighbor.chunk.Refresh();
 				}
 			}
+
+			if(Unit)
+			{
+				Unit.ValidateLocation();
+			}
 		}
 	}
 
 	private void RefreshSelfOnly()
 	{
 		chunk.Refresh();
+		if(Unit)
+		{
+			Unit.ValidateLocation();
+		}
 	}
 
 	void RefreshPosition()

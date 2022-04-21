@@ -8,11 +8,20 @@ public class HexGrid : MonoBehaviour
 {
 	public int seed;
 	public int cellCountX = 20, cellCountZ = 15;
-	int chunkCountX, chunkCountZ;
+	private int chunkCountX, chunkCountZ;
+
+	public bool HasPath
+	{
+		get
+		{
+			return currentPathExists;
+		}
+	}
 
 	[SerializeField] private HexCell cellPrefab;
     [SerializeField] private TMP_Text cellLabelPrefab;
 	[SerializeField] private HexGridChunk chunkPrefab;
+	[SerializeField] private HexUnit unitPrefab;
 	[SerializeField] private Texture2D noiseSource;
 
 	private HexGridChunk[] chunks;
@@ -21,11 +30,13 @@ public class HexGrid : MonoBehaviour
 	private int searchFrontierPhase;
 	private HexCell currentPathFrom, currentPathTo;
 	private bool currentPathExists;
+	private List<HexUnit> units = new List<HexUnit>();
 
 	private void Awake()
     {
 		HexMetrics.noiseSource = noiseSource;
 		HexMetrics.InitializeHashGrid(seed);
+		HexUnit.unitPrefab = unitPrefab;
 		CreateMap(cellCountX, cellCountZ);
 	}
 
@@ -35,6 +46,7 @@ public class HexGrid : MonoBehaviour
 		{
 			HexMetrics.noiseSource = noiseSource;
 			HexMetrics.InitializeHashGrid(seed);
+			HexUnit.unitPrefab = unitPrefab;
 		}
 	}
 	
@@ -48,6 +60,8 @@ public class HexGrid : MonoBehaviour
 		}
 
 		ClearPath();
+		ClearUnits();
+
 		if(chunks != null)
 		{
 			for(int i = 0; i < chunks.Length; i++)
@@ -146,6 +160,15 @@ public class HexGrid : MonoBehaviour
 		chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
 	}
 
+	void ClearUnits()
+	{
+		for(int i = 0; i < units.Count; i++)
+		{
+			units[i].Die();
+		}
+		units.Clear();
+	}
+
 	public HexCell GetCell(Vector3 position)
 	{
 		position = transform.InverseTransformPoint(position);
@@ -212,7 +235,7 @@ public class HexGrid : MonoBehaviour
 				if(neighbor == null ||
 					neighbor.SearchPhase > searchFrontierPhase)
 					continue;
-				if(neighbor.IsUnderwater)
+				if(neighbor.IsUnderwater || neighbor.Unit)
 					continue;
 				HexEdgeType edgeType = current.GetEdgeType(neighbor);
 				if(edgeType == HexEdgeType.Cliff)
@@ -280,7 +303,7 @@ public class HexGrid : MonoBehaviour
 		currentPathTo.EnableHighlight(Color.red);
 	}
 
-	private void ClearPath()
+	public void ClearPath()
 	{
 		if(currentPathExists)
 		{
@@ -302,6 +325,30 @@ public class HexGrid : MonoBehaviour
 		currentPathFrom = currentPathTo = null;
 	}
 
+	public void AddUnit(HexUnit unit, HexCell location, float orientation)
+	{
+		units.Add(unit);
+		unit.transform.SetParent(transform, false);
+		unit.Location = location;
+		unit.Orientation = orientation;
+	}
+
+	public void RemoveUnit(HexUnit unit)
+	{
+		units.Remove(unit);
+		unit.Die();
+	}
+
+	public HexCell GetCell(Ray ray)
+	{
+		RaycastHit hit;
+		if (Physics.Raycast(ray, out hit))
+		{
+			return GetCell(hit.point);
+		}
+		return null;
+	}
+
 	public void ShowUI(bool visible)
 	{
 		for(int i = 0; i < chunks.Length; i++)
@@ -319,11 +366,18 @@ public class HexGrid : MonoBehaviour
 		{
 			cells[i].Save(writer);
 		}
+
+		writer.Write(units.Count);
+		for(int i = 0; i < units.Count; i++)
+		{
+			units[i].Save(writer);
+		}
 	}
 
 	public void Load(BinaryReader reader, int header)
 	{
 		ClearPath();
+		ClearUnits();
 		int x = 20, z = 15;
 		if(header >= 1)
 		{
@@ -344,6 +398,15 @@ public class HexGrid : MonoBehaviour
 		for(int i = 0; i < chunks.Length; i++)
 		{
 			chunks[i].Refresh();
+		}
+
+		if (header >= 2)
+		{
+			int unitCount = reader.ReadInt32();
+			for(int i = 0; i < unitCount; i++)
+			{
+				HexUnit.Load(reader, this);
+			}
 		}
 	}
 }
