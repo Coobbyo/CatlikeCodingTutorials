@@ -92,7 +92,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 209313185714119688}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 824fdca5558ac6444b842286fe25f0df, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
@@ -209,10 +209,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 10
-  maxAcceleration: 10
-  maxAirAcceleration: 1
+  maxAcceleration: 100
+  maxAirAcceleration: 0
   jumpHeight: 2
   maxAirJumps: 0
+  maxGroundAngle: 40
 --- !u!54 &209313185714119731
 Rigidbody:
   m_ObjectHideFlags: 0
