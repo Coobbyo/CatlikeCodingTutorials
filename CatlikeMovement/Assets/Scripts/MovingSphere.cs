@@ -3,11 +3,21 @@ using UnityEngine;
 public class MovingSphere : MonoBehaviour
 {
     [SerializeField, Range(0f, 100f)] private float maxSpeed = 10f;
-    [SerializeField, Range(0f, 100f)] private float maxAcceleration = 10f;
-    [SerializeField, Range(0f, 1f)] private float bounciness = 0.5f;
-    [SerializeField] private Rect allowedArea = new Rect(-5f, -5f, 10f, 10f);
+    [SerializeField, Range(0f, 100f)] private float maxAcceleration = 10f, maxAirAcceleration = 1f;
+	[SerializeField, Range(0f, 10f)] private float jumpHeight = 2f;
+	[SerializeField, Range(0, 5)] private int maxAirJumps = 0;
 
-    private Vector3 velocity;
+    private Vector3 velocity, desiredVelocity;
+	private Rigidbody body;
+	private bool desiredJump;
+	private bool onGround;
+	private int jumpPhase;
+
+
+	private void Awake()
+	{
+		body = GetComponent<Rigidbody>();
+	}
 
     private void Update()
     {
@@ -16,32 +26,72 @@ public class MovingSphere : MonoBehaviour
 		playerInput.y = Input.GetAxis("Vertical");
         playerInput = Vector2.ClampMagnitude(playerInput, 1f);
 
-		Vector3 desiredVelocity =
+		desiredVelocity =
 			new Vector3(playerInput.x, 0f, playerInput.y) * maxSpeed;
-        float maxSpeedChange = maxAcceleration * Time.deltaTime;
-        velocity.x =
+
+		desiredJump = Input.GetButtonDown("Jump");
+	}
+
+	private void FixedUpdate()
+	{
+		UpdateState();
+		float acceleration = onGround ? maxAcceleration : maxAirAcceleration;
+		float maxSpeedChange = acceleration * Time.deltaTime;
+		velocity.x =
 			Mathf.MoveTowards(velocity.x, desiredVelocity.x, maxSpeedChange);
 		velocity.z =
 			Mathf.MoveTowards(velocity.z, desiredVelocity.z, maxSpeedChange);
-		Vector3 displacement = velocity * Time.deltaTime;
 
-		Vector3 newPosition = transform.localPosition + displacement;
-        if (newPosition.x < allowedArea.xMin) {
-			newPosition.x = allowedArea.xMin;
-			velocity.x = -velocity.x * bounciness;
+		if (desiredJump)
+		{
+			desiredJump = false;
+			Jump();
 		}
-		else if (newPosition.x > allowedArea.xMax) {
-			newPosition.x = allowedArea.xMax;
-			velocity.x = -velocity.x * bounciness;
+
+		body.velocity = velocity;
+		onGround = false;
+	}
+
+	void UpdateState()
+	{
+		velocity = body.velocity;
+		if(onGround)
+		{
+			jumpPhase = 0;
 		}
-		if (newPosition.z < allowedArea.yMin) {
-			newPosition.z = allowedArea.yMin;
-			velocity.z = -velocity.z * bounciness;
+	}
+
+	void OnCollisionEnter(Collision collision)
+	{
+		EvaluateCollision(collision);
+	}
+
+	void OnCollisionStay(Collision collision)
+	{
+		EvaluateCollision(collision);
+	}
+
+	void EvaluateCollision(Collision collision)
+	{
+		for(int i = 0; i < collision.contactCount; i++)
+		{
+			Vector3 normal = collision.GetContact(i).normal;
+			onGround |= normal.y >= 0.9f;
+
 		}
-		else if (newPosition.z > allowedArea.yMax) {
-			newPosition.z = allowedArea.yMax;
-			velocity.z = -velocity.z * bounciness;
+	}
+
+	private void Jump()
+	{
+		if(onGround || jumpPhase < maxAirJumps)
+		{
+			jumpPhase += 1;
+			float jumpSpeed = Mathf.Sqrt(-2f * Physics.gravity.y * jumpHeight);
+			if(velocity.y > 0f)
+			{
+				jumpSpeed = Mathf.Max(jumpSpeed - velocity.y, 0f);
+			}
+			velocity.y += jumpSpeed;
 		}
-		transform.localPosition = newPosition;
 	}
 }
