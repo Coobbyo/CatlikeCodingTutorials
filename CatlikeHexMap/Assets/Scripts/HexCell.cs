@@ -9,11 +9,13 @@ public class HexCell : MonoBehaviour
 	public HexGridChunk chunk;
 	public RectTransform uiRect;
 	
+	public int Index { get; set; }
 	public HexCell PathFrom { get; set; }
 	public int SearchHeuristic { get; set; }
 	public HexCell NextWithSamePriority { get; set; }
 	public int SearchPhase { get; set; }
 	public HexUnit Unit { get; set; }
+	public HexCellShaderData ShaderData { get; set; }
 	public int SearchPriority
 	{
 		get
@@ -32,7 +34,7 @@ public class HexCell : MonoBehaviour
 			if(terrainTypeIndex != value)
 			{
 				terrainTypeIndex = value;
-				Refresh();
+				ShaderData.RefreshTerrain(this);
 			}
 		}
 	}
@@ -276,6 +278,13 @@ public class HexCell : MonoBehaviour
 			//UpdateDistanceLabel();
 		}
 	}
+	public bool IsVisible
+	{
+		get
+		{
+			return visibility > 0;
+		}
+	}
 
 	private int terrainTypeIndex;
 	private int elevation = int.MinValue;
@@ -286,6 +295,7 @@ public class HexCell : MonoBehaviour
 	private bool walled;
 	private int specialIndex;
 	private int distance;
+	private int visibility;
 
 	[SerializeField] private HexCell[] neighbors;
 	[SerializeField] private bool[] roads;
@@ -452,6 +462,20 @@ public class HexCell : MonoBehaviour
 		}
 	}
 
+	public void IncreaseVisibility()
+	{
+		visibility += 1;
+		if (visibility == 1)
+			ShaderData.RefreshVisibility(this);
+	}
+
+	public void DecreaseVisibility()
+	{
+		visibility -= 1;
+		if (visibility == 0)
+			ShaderData.RefreshVisibility(this);
+	}
+
 	public void DisableHighlight()
 	{
 		Image highlight = uiRect.GetChild(0).GetComponent<Image>();
@@ -552,6 +576,7 @@ public class HexCell : MonoBehaviour
 	public void Load(BinaryReader reader)
 	{
 		terrainTypeIndex = reader.ReadByte();
+		ShaderData.RefreshTerrain(this);
 		elevation = reader.ReadByte();
 		RefreshPosition();
 		waterLevel = reader.ReadByte();
