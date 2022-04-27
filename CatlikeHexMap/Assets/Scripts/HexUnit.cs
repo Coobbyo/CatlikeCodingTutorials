@@ -35,6 +35,13 @@ public class HexUnit : MonoBehaviour
 			transform.localRotation = Quaternion.Euler(0f, value, 0f);
 		}
 	}
+	public int Speed
+	{
+		get
+		{
+			return 24;
+		}
+	}
 	public HexGrid Grid { get; set; }
 
 	private const float travelSpeed = 4f;
@@ -144,6 +151,28 @@ public class HexUnit : MonoBehaviour
 		StartCoroutine(TravelPath());
 	}
 
+	public int GetMoveCost(
+		HexCell fromCell, HexCell toCell, HexDirection direction)
+	{
+		HexEdgeType edgeType = fromCell.GetEdgeType(toCell);
+		if (edgeType == HexEdgeType.Cliff) {
+			return -1;
+		}
+		int moveCost;
+		if (fromCell.HasRoadThroughEdge(direction)) {
+			moveCost = 1;
+		}
+		else if (fromCell.Walled != toCell.Walled) {
+			return -1;
+		}
+		else {
+			moveCost = edgeType == HexEdgeType.Flat ? 5 : 10;
+			moveCost +=
+				toCell.UrbanLevel + toCell.FarmLevel + toCell.PlantLevel;
+		}
+		return moveCost;
+	}
+
     public void ValidateLocation()
     {
 		transform.localPosition = location.Position;
@@ -151,8 +180,8 @@ public class HexUnit : MonoBehaviour
 
 	public bool IsValidDestination(HexCell cell)
     {
-		transform.localPosition = location.Position;
-		return !cell.IsUnderwater && !cell.Unit;
+		transform.localPosition = location.Position; //This is stillneeded right? (Tut21 Exploration makes me question this)
+		return cell.IsExplored && !cell.IsUnderwater && !cell.Unit;
 	}
 
     public void Die()
