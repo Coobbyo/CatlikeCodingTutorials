@@ -1,6 +1,6 @@
-# Movement 03: Surface Contact
+# Movement 04: Orbit Camera
 
-[This is the third installment of a tutorial series about controlling the movement of a character.](https://catlikecoding.com/unity/tutorials/movement/surface-contact/) It's about refining how a sphere interacts with surfaces.
+[This is the fourth installment of a tutorial series about controlling the movement of a character.](https://catlikecoding.com/unity/tutorials/movement/orbit-camera/) This time we focus on the camera, creating an orbiting point of view from which we control the sphere.
 
 ## License
 
