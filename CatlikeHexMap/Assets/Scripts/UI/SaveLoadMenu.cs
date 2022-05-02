@@ -12,7 +12,7 @@ public class SaveLoadMenu : MonoBehaviour
 
 	[SerializeField] private HexGrid hexGrid;
 
-	private const int mapFileVersion = 3;
+	private const int mapFileVersion = 4;
     private bool saveMode;
 
     private string GetSelectedPath()
