@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Game : PersistableObject
 {
@@ -13,16 +15,30 @@ public class Game : PersistableObject
     [SerializeField] private KeyCode saveKey = KeyCode.S;
     [SerializeField] private KeyCode loadKey = KeyCode.L;
     [SerializeField] private PersistentStorage storage;
+    [SerializeField] private int levelCount;
 
     private const int saveVersion = 1;
     private List<Shape> shapes;
     private string savePath;
     private float creationProgress, destructionProgress;
 
-    private void Awake()
+    private void Start()
     {
 		shapes = new List<Shape>();
-        
+
+        if(Application.isEditor)
+        {
+            for(int i = 0; i < SceneManager.sceneCount; i++)
+            {
+				Scene loadedScene = SceneManager.GetSceneAt(i);
+				if (loadedScene.name.Contains("Level ")) {
+					SceneManager.SetActiveScene(loadedScene);
+					return;
+				}
+			}
+        }
+
+        StartCoroutine(LoadLevel(1));
 	}
 
     private void Update()
@@ -62,6 +78,18 @@ public class Game : PersistableObject
 			destructionProgress -= 1f;
 			DestroyShape();
 		}
+	}
+
+    private IEnumerator LoadLevel(int levelBuildIndex) 
+    {
+        enabled = false;
+		yield return SceneManager.LoadSceneAsync(
+			levelBuildIndex, LoadSceneMode.Additive
+		);
+        SceneManager.SetActiveScene(
+            SceneManager.GetSceneByBuildIndex(levelBuildIndex)
+        );
+        enabled = true;
 	}
 
     private void BeginNewGame()
