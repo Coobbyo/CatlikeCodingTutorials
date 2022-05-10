@@ -20,16 +20,30 @@ public class HexMapGenerator : MonoBehaviour
 	[SerializeField, Range(0, 10)] private int regionBorder = 5;
 	[SerializeField, Range(1, 4)] private int regionCount = 1;
 	[SerializeField, Range(0, 100)] private int erosionPercentage = 50;
+	[SerializeField, Range(0f, 1f)] private float evaporationFactor = 0.5f;
+	[SerializeField, Range(0f, 1f)] private float precipitationFactor = 0.25f;
+	[SerializeField, Range(0f, 1f)] private float runoffFactor = 0.25f;
+	[SerializeField, Range(0f, 1f)] private float seepageFactor = 0.125f;
+	[SerializeField] private HexDirection windDirection = HexDirection.NW;
+	[SerializeField, Range(1f, 10f)] private float windStrength = 4f;
+	[SerializeField, Range(0f, 1f)] private float startingMoisture = 0.1f;
 
     private HexCellPriorityQueue searchFrontier;
     private int searchFrontierPhase;
     private int cellCount;
 
+	
 	private struct MapRegion
 	{
 		public int xMin, xMax, zMin, zMax;
 	}
-	List<MapRegion> regions;
+	struct ClimateData
+	{
+		public float clouds, moisture;
+	}
+	private List<MapRegion> regions;
+	private List<ClimateData> climate = new List<ClimateData>();
+	private List<ClimateData> nextClimate = new List<ClimateData>();
 
 
 	public void GenerateMap(int x, int z)
@@ -57,6 +71,7 @@ public class HexMapGenerator : MonoBehaviour
 		CreateRegions();
         CreateLand();
 		ErodeLand();
+		CreateClimate();
         SetTerrainType();
 
         for(int i = 0; i < cellCount; i++)
@@ -350,16 +365,139 @@ public class HexMapGenerator : MonoBehaviour
 		return target;
 	}
 
-    void SetTerrainType()
+    private void SetTerrainType()
     {
 		for(int i = 0; i < cellCount; i++)
-        {
+		{
 			HexCell cell = grid.GetCell(i);
-			if(!cell.IsUnderwater)
-            {
-				cell.TerrainTypeIndex = cell.Elevation - cell.WaterLevel;
+			float moisture = climate[i].moisture;
+			if (!cell.IsUnderwater)
+			{
+				if(moisture < 0.05f)
+				{
+					cell.TerrainTypeIndex = 4;
+				}
+				else if(moisture < 0.12f)
+				{
+					cell.TerrainTypeIndex = 0;
+				}
+				else if(moisture < 0.28f)
+				{
+					cell.TerrainTypeIndex = 3;
+				}
+				else if(moisture < 0.85f)
+				{
+					cell.TerrainTypeIndex = 1;
+				}
+				else
+				{
+					cell.TerrainTypeIndex = 2;
+				}
 			}
+			else
+			{
+				cell.TerrainTypeIndex = 2;
+			}
+			cell.SetMapData(moisture);
 		}
+	}
+
+	private void CreateClimate ()
+	{
+		climate.Clear();
+		nextClimate.Clear();
+		ClimateData initialData = new ClimateData();
+		initialData.moisture = startingMoisture;
+		ClimateData clearData = new ClimateData();
+		for(int i = 0; i < cellCount; i++)
+		{
+			climate.Add(initialData);
+			nextClimate.Add(clearData);
+		}
+
+		for(int cycle = 0; cycle < 40; cycle++)
+		{
+			for(int i = 0; i < cellCount; i++)
+			{
+				EvolveClimate(i);
+			}
+			List<ClimateData> swap = climate;
+			climate = nextClimate;
+			nextClimate = swap;
+		}
+	}
+
+	private void EvolveClimate(int cellIndex)
+	{
+		HexCell cell = grid.GetCell(cellIndex);
+		ClimateData cellClimate = climate[cellIndex];
+		
+		if(cell.IsUnderwater)
+		{
+			cellClimate.moisture = 1f;
+			cellClimate.clouds += evaporationFactor;
+		}
+		else
+		{
+			float evaporation = cellClimate.moisture * evaporationFactor;
+			cellClimate.moisture -= evaporation;
+			cellClimate.clouds += evaporation;
+		}
+
+		float precipitation = cellClimate.clouds * precipitationFactor;
+		cellClimate.clouds -= precipitation;
+		cellClimate.moisture += precipitation;
+
+		float cloudMaximum = 1f - cell.ViewElevation / (elevationMaximum + 1f);
+		if(cellClimate.clouds > cloudMaximum)
+		{
+			cellClimate.moisture += cellClimate.clouds - cloudMaximum;
+			cellClimate.clouds = cloudMaximum;
+		}
+
+		HexDirection mainDispersalDirection = windDirection.Opposite();
+		float cloudDispersal = cellClimate.clouds * (1f / (5f + windStrength));
+		float runoff = cellClimate.moisture * runoffFactor * (1f / 6f);
+		float seepage = cellClimate.moisture * seepageFactor * (1f / 6f);
+		for(HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+		{
+			HexCell neighbor = cell.GetNeighbor(d);
+			if(!neighbor)
+				continue;
+			
+			ClimateData neighborClimate = nextClimate[neighbor.Index];
+			if(d == mainDispersalDirection)
+			{
+				neighborClimate.clouds += cloudDispersal * windStrength;
+			}
+			else
+			{
+				neighborClimate.clouds += cloudDispersal;
+			}
+
+			int elevationDelta = neighbor.ViewElevation - cell.ViewElevation;
+			if(elevationDelta < 0)
+			{
+				cellClimate.moisture -= runoff;
+				neighborClimate.moisture += runoff;
+			}
+			else if(elevationDelta == 0)
+			{
+				cellClimate.moisture -= seepage;
+				neighborClimate.moisture += seepage;
+			}
+
+			nextClimate[neighbor.Index] = neighborClimate;
+		}
+
+		ClimateData nextCellClimate = nextClimate[cellIndex];
+		nextCellClimate.moisture += cellClimate.moisture;
+		if(nextCellClimate.moisture > 1f)
+		{
+			nextCellClimate.moisture = 1f;
+		}
+		nextClimate[cellIndex] = nextCellClimate;
+		climate[cellIndex] = new ClimateData();
 	}
 
     private HexCell GetRandomCell(MapRegion region)
