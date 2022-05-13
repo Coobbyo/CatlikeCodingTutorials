@@ -83,7 +83,7 @@ public class HexCellShaderData : MonoBehaviour
     {
 		if(cellTexture)
         {
-			cellTexture.Resize(x, z);
+			cellTexture.Reinitialize(x, z);
 		}
 		else
         {
