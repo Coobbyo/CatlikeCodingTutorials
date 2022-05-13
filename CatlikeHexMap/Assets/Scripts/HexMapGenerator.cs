@@ -25,6 +25,7 @@ public class HexMapGenerator : MonoBehaviour
 	[SerializeField, Range(0, 10)] private int regionBorder = 5;
 	[SerializeField, Range(1, 4)] private int regionCount = 1;
 	[SerializeField, Range(0, 100)] private int erosionPercentage = 50;
+	[SerializeField, Range(0f, 1f)] private float startingMoisture = 0.1f;
 	[SerializeField, Range(0f, 1f)] private float evaporationFactor = 0.5f;
 	[SerializeField, Range(0f, 1f)] private float precipitationFactor = 0.25f;
 	[SerializeField, Range(0f, 1f)] private float runoffFactor = 0.25f;
@@ -38,7 +39,6 @@ public class HexMapGenerator : MonoBehaviour
 	[SerializeField, Range(0f, 1f)] private float highTemperature = 1f;
 	[SerializeField] private HemisphereMode hemisphere;
 	[SerializeField, Range(0f, 1f)] private float temperatureJitter = 0.1f;
-	[SerializeField, Range(0f, 1f)] private float startingMoisture = 0.1f;
 
 	private struct MapRegion
 	{
