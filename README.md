@@ -1,9 +1,8 @@
 # CatlikeCodingTutorials
+https://catlikecoding.com/unity/tutorials/
 
 Next Tutorials to do:
 1. Hex Map
-2. Pseudo Random Noise
-3. Procedural Meshes
 4. Object Management
 5. Rendering
 6. Movement
