@@ -17,6 +17,7 @@ public class HexCell : MonoBehaviour
 	public HexUnit Unit { get; set; }
 	public HexCellShaderData ShaderData { get; set; }
 	public bool Explorable { get; set; }
+	public int ColumnIndex { get; set; }
 	public int SearchPriority
 	{
 		get
