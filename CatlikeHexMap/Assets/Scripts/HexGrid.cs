@@ -40,16 +40,21 @@ public class HexGrid : MonoBehaviour
 
 	private void Awake()
     {
+		Debug.Log("Awaking Map");
 		HexMetrics.noiseSource = noiseSource;
 		HexMetrics.InitializeHashGrid(seed);
 		HexUnit.unitPrefab = unitPrefab;
 		cellShaderData = gameObject.AddComponent<HexCellShaderData>();
 		cellShaderData.Grid = this;
 		CreateMap(cellCountX, cellCountZ, wrapping);
+
+		if(columns == null)
+			Debug.Log("null columns!");
 	}
 
 	private void OnEnable()
 	{
+		Debug.Log("Enabling Map");
 		if(!HexMetrics.noiseSource)
 		{
 			HexMetrics.noiseSource = noiseSource;
@@ -58,6 +63,12 @@ public class HexGrid : MonoBehaviour
 			HexMetrics.wrapSize = wrapping ? cellCountX : 0;
 			ResetVisibility();
 		}
+	}
+
+	private void Update()
+	{
+		if(columns == null)
+			Debug.Log("null columns!");
 	}
 	
 	public bool CreateMap(int x, int z, bool wrapping)
@@ -91,6 +102,9 @@ public class HexGrid : MonoBehaviour
 
 		CreateChunks();
 		CreateCells();
+
+		if(columns == null)
+			Debug.Log("null columns!");
 
 		return true;
 	}

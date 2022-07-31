@@ -30,6 +30,7 @@ public class HexMapCamera : MonoBehaviour
 
 	void OnEnable()
 	{
+		Debug.Log("Enabling Camera");
 		instance = this;
 		ValidatePosition();
 	}
